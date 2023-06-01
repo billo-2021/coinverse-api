@@ -1,5 +1,6 @@
 package com.coinverse.api.common.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -60,6 +61,7 @@ public class User implements UserDetails {
             nullable = false,
             columnDefinition = "TEXT"
     )
+    @JsonIgnore
     private String passwordHash;
 
     @Column(

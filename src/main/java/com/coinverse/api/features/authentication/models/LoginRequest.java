@@ -1,4 +1,4 @@
-package com.coinverse.api.common.models;
+package com.coinverse.api.features.authentication.models;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

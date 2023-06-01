@@ -1,4 +1,4 @@
-package com.coinverse.api.common.models;
+package com.coinverse.api.features.authentication.models;
 
 import com.coinverse.api.common.entities.User;
 import com.coinverse.api.common.entities.UserRole;
@@ -14,4 +14,5 @@ public class RegisterRequest {
     private String lastName;
     private String emailAddress;
     private String password;
+    private String roleName;
 }
