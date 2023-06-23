@@ -1,12 +1,12 @@
 package com.coinverse.api.common.repositories;
 
-import com.coinverse.api.common.entities.UserRole;
+import com.coinverse.api.common.entities.CryptoCurrency;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
 @Repository
-public interface UserRoleRepository extends JpaRepository<UserRole, Long> {
-    Optional<UserRole> findByName(String name);
+public interface CryptoCurrencyRepository extends JpaRepository<CryptoCurrency, Long> {
+    Optional<CryptoCurrency> findByCode(String code);
 }
