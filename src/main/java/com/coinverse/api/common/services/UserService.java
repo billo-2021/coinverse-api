@@ -1,18 +1,20 @@
 package com.coinverse.api.common.services;
 
-import com.coinverse.api.common.entities.User;
 import com.coinverse.api.common.models.UserRequest;
 import com.coinverse.api.common.models.UserResponse;
-import org.springframework.security.core.userdetails.UserDetailsService;
+import com.coinverse.api.common.models.UserUpdateRequest;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
 import java.util.Optional;
 
-public interface UserService extends UserDetailsService {
-    Optional<UserResponse> getUserById(Long id);
-    Optional<UserResponse> getUserByEmailAddress(String emailAddress);
-    public List<UserResponse> getUsers();
-    UserResponse addUser(UserRequest userRequest);
-    UserResponse updateUser(Long id, User user);
-    void deleteUser(Long id);
+public interface UserService {
+    Optional<UserResponse> getUserById(@NotNull final Long id);
+    Optional<UserResponse> getUserByEmailAddress(@NotNull final String emailAddress);
+    Optional<UserResponse> getUserByAccountId(@NotNull final Long accountId);
+    List<UserResponse> getUsers();
+    UserResponse addUser(@NotNull final UserRequest userRequest);
+    UserResponse updateUser(@NotNull final Long id, @NotNull final UserRequest userRequest);
+    void updateUserByEmailAddress(@NotNull final String emailAddress, @NotNull UserUpdateRequest userUpdateRequest);
+    void deleteUser(@NotNull final Long id);
 }
