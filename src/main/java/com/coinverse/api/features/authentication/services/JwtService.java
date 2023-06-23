@@ -1,73 +1,62 @@
 package com.coinverse.api.features.authentication.services;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.security.Keys;
-import org.springframework.security.core.userdetails.UserDetails;
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.interfaces.Claim;
+import com.auth0.jwt.interfaces.DecodedJWT;
+import com.coinverse.api.features.authentication.config.JwtProperties;
+import com.coinverse.api.common.security.models.RolePrincipal;
+import com.coinverse.api.common.security.models.UserAccount;
+import jakarta.validation.constraints.NotNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.security.Key;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Function;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Service
+@RequiredArgsConstructor
 public class JwtService {
-    private static final String SECRET_KEY = "655468576D5A7134743777397A24432646294A404E635266556A586E32723575";
-    public String extractUsername(String jwtToken) {
-        return extractClaim(jwtToken, Claims::getSubject);
+    private final JwtProperties properties;
+    public String issueToken(@NotNull final String username,
+                             @NotNull final String emailAddress,
+                             @NotNull final List<String> roleNames) {
+        return JWT.create()
+                .withSubject(username)
+                .withExpiresAt(Instant.now().plus(Duration.of(1, ChronoUnit.DAYS)))
+                .withClaim("email", emailAddress)
+                .withClaim("roles", roleNames)
+                .sign(Algorithm.HMAC256(properties.secretKey()));
     }
 
-    public String generateToken(UserDetails userDetails) {
-        return generateToken(new HashMap<>(), userDetails);
-    }
-
-    public String generateToken(
-            Map<String, Object> extraClaims,
-            UserDetails userDetails
-            ) {
-        return Jwts
-                .builder()
-                .setClaims(extraClaims)
-                .setSubject(userDetails.getUsername())
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 100 * 60 * 24))
-                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
-                .compact();
-    }
-
-    public boolean isTokenValid(String token, UserDetails userDetails) {
-        final String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
-    }
-
-    private boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
-    }
-
-    private Date extractExpiration(String token) {
-        return extractClaim(token, Claims::getExpiration);
-    }
-
-    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
-        final Claims claims = extractAllClaims(token);
-        return claimsResolver.apply(claims);
-    }
-
-    private Claims extractAllClaims(String token) {
-        return Jwts
-                .parserBuilder()
-                .setSigningKey(getSigningKey())
+    public DecodedJWT decodeToken(@NotNull final String token) {
+        return JWT.require(Algorithm.HMAC256(properties.secretKey()))
                 .build()
-                .parseClaimsJws(token)
-                .getBody();
+                .verify(token);
     }
 
-    private Key getSigningKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
-        return Keys.hmacShaKeyFor(keyBytes);
+    public UserAccount convertJwtToUserPrincipal(@NotNull final DecodedJWT jwt) {
+        return UserAccount.builder()
+                .username(jwt.getClaim("email").toString())
+                .authorities(extractAuthoritiesFromClaim(jwt))
+                .build();
+    }
+
+    private Set<RolePrincipal> extractAuthoritiesFromClaim(@NotNull final DecodedJWT jwt) {
+        final Claim claim = jwt.getClaim("roles");
+
+        if (claim.isNull() || claim.isMissing()) {
+            return Set.of();
+        }
+
+        return new HashSet<>(claim.asList(RolePrincipal.class));
+    }
+
+    public String extractUsername(@NotNull final DecodedJWT jwt) {
+        return jwt.getSubject();
     }
 }

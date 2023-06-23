@@ -1,73 +1,127 @@
 package com.coinverse.api.features.authentication.services;
 
-import com.coinverse.api.common.mappers.UserMapper;
 import com.coinverse.api.common.models.*;
+import com.coinverse.api.common.security.exceptions.*;
+import com.coinverse.api.common.services.AccountService;
 import com.coinverse.api.common.services.UserService;
-import com.coinverse.api.features.authentication.models.UserPrincipal;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import com.coinverse.api.common.security.models.UserAccount;
+import com.coinverse.api.features.authentication.exceptions.LoginAuthenticationException;
+import com.coinverse.api.features.authentication.mappers.AuthenticationMapper;
+import com.coinverse.api.features.authentication.models.*;
+import com.coinverse.api.features.authentication.validators.LoginRequestValidator;
+import com.coinverse.api.features.messaging.models.MessagingChannel;
+import jakarta.validation.constraints.NotNull;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.*;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class AuthenticationServiceImpl implements AuthenticationService {
     private final UserService userService;
-    private final UserMapper userMapper;
+    private final AccountService accountService;
+    private final AuthenticationMapper authenticationMapper;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
+    private final AccountVerificationService accountVerificationService;
+    private final LoginRequestValidator loginRequestValidator;
 
-    public AuthenticationServiceImpl(
-            UserService userService,
-            UserMapper userMapper,
-            JwtService jwtService,
-            PasswordEncoder passwordEncoder,
-            AuthenticationManager authenticationManager
-    ) {
-        this.userService = userService;
-        this.userMapper = userMapper;
-        this.jwtService = jwtService;
-        this.passwordEncoder = passwordEncoder;
-        this.authenticationManager = authenticationManager;
-    }
+    private final ResetPasswordService resetPasswordService;
 
     @Override
-    public AuthenticationResponse register(RegisterRequest registerRequest) {
-        final String passwordHash = passwordEncoder.encode(registerRequest.getPassword());
-        final UserRequest userRequest = userMapper.registerRequestToUserRequest(registerRequest);
-        userRequest.setPasswordHash(passwordHash);
-        userRequest.setPasswordSalt("123");
-
+    public UserResponse register(@NotNull final RegisterRequest registerRequest) {
+        final UserRequest userRequest = authenticationMapper.registerRequestToUserRequest(registerRequest, passwordEncoder);
         final UserResponse userResponse = userService.addUser(userRequest);
-        final String jwtToken = jwtService.generateToken(userResponse);
+        final AccountResponse accountResponse = userResponse.getAccount();
 
-        return AuthenticationResponse.builder().token(jwtToken).build();
+        checkToRequestToken(accountResponse);
+
+        return userResponse;
     }
 
     @Override
-    public AuthenticationResponse login(LoginRequest loginRequest) {
-        final String emailAddress = loginRequest.getEmailAddress();
-        final String password = loginRequest.getPassword();
+    public LoginResponse login(@NotNull final LoginRequest loginRequest) {
+        final AccountResponse accountResponse = loginRequestValidator.validate(loginRequest);
 
-        var usernamePasswordAuthToken = new UsernamePasswordAuthenticationToken(emailAddress, password);
-        authenticationManager.authenticate(usernamePasswordAuthToken);
+        try {
+            final String username = loginRequest.getUsername();
+            final String password = loginRequest.getPassword();
 
-        final Optional<UserResponse> userResponse = userService.getUserByEmailAddress(emailAddress);
+            final UsernamePasswordAuthenticationToken usernamePasswordAuthToken =
+                    new UsernamePasswordAuthenticationToken(username, password);
 
-        if (userResponse.isEmpty()) {
-            throw new RuntimeException("User with email " + emailAddress + " does not exist");
+            final Authentication authentication = authenticationManager.
+                    authenticate(usernamePasswordAuthToken);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            final UserAccount userPrincipal = (UserAccount) authentication.getPrincipal();
+
+            final UserResponse userResponse = userService.getUserByAccountId(userPrincipal.getId())
+                    .orElseThrow(InvalidCredentialsException::new);
+
+            accountService.resetAccountLoginAttemptsById(accountResponse.getId());
+
+            final List<String> roles = userPrincipal
+                    .getAuthorities().stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .toList();
+
+            checkToRequestToken(accountResponse);
+
+            final String token = jwtService.issueToken(
+                    userPrincipal.getUsername(),
+                    userPrincipal.getUsername(),
+                    roles
+            );
+
+            return LoginResponse
+                    .builder()
+                    .user(userResponse)
+                    .accessToken(token)
+                    .build();
+        } catch (AuthenticationException ex) {
+            throw new LoginAuthenticationException(loginRequest, accountResponse, ex);
+        }
+    }
+
+    @Override
+    public void requestToken(@NotNull final TokenRequest tokenRequest) {
+        accountVerificationService.requestToken(tokenRequest);
+    }
+
+    @Override
+    public void verifyAccount(@NotNull final TokenVerifyRequest verifyAccountRequest) {
+        accountVerificationService.verifyAccount(verifyAccountRequest);
+    }
+
+    @Override
+    public void requestResetPasswordToken(@NotNull final TokenRequest tokenRequest) {
+        resetPasswordService.requestResetPasswordToken(tokenRequest);
+    }
+
+    @Override
+    public void resetPassword(@NotNull final ResetPasswordRequest resetPasswordRequest) {
+        resetPasswordService.resetPassword(resetPasswordRequest);
+    }
+
+    private void checkToRequestToken(@NotNull final AccountResponse accountResponse) {
+        if (accountResponse.getStatus() != AccountStatusEnum.PENDING_VERIFICATION) {
+            return;
         }
 
-        var user = userResponse.get();
-        var jwtToken = jwtService.generateToken(user);
-        return AuthenticationResponse.builder()
-                .token(jwtToken)
+        final TokenRequest tokenRequest = TokenRequest.builder()
+                .username(accountResponse.getUsername())
+                .messagingChannel(MessagingChannel.EMAIL.getName())
                 .build();
-    }
 
-    private UserPrincipal getUserDetails(String emailAddress) {
-
+        requestToken(tokenRequest);
     }
 }
