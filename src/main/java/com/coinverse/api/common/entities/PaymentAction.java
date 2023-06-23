@@ -6,31 +6,42 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Entity
-@Table(name = "user_roles")
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
 @Builder
-public class UserRole {
+@Entity
+@Table(
+        name = "payment_actions",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "payment_actions_name_unique", columnNames = "name")
+        }
+)
+public class PaymentAction {
     @Id
-    @SequenceGenerator(name = "user_roles_sequence",
-            sequenceName="user_roles_sequence",
+    @SequenceGenerator(
+            name = "payment_actions_sequence",
+            sequenceName = "payment_actions_sequence",
             allocationSize = 1
     )
     @GeneratedValue(
             strategy = GenerationType.SEQUENCE,
-            generator = "user_roles_sequence"
+            generator = "payment_actions_sequence"
     )
     @Column(
             name = "id",
             updatable = false
     )
-    private long id;
+    private Long id;
+
     @Column(
             name = "name",
             nullable = false,
             columnDefinition = "TEXT"
     )
     private String name;
+
+    public PaymentAction(final String name) {
+        this.name = name;
+    }
 }

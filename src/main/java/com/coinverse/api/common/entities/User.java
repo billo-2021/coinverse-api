@@ -1,20 +1,19 @@
 package com.coinverse.api.common.entities;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
-import java.util.Collection;
-import java.util.List;
+import java.time.OffsetDateTime;
 
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Data
+@Builder
 @Entity
 @Table(
         name = "users",
@@ -22,9 +21,10 @@ import java.util.List;
                 @UniqueConstraint(name = "user_email_unique", columnNames = "email_address")
         }
 )
-public class User implements UserDetails {
+public class User {
     @Id
-    @SequenceGenerator(name = "users_sequence",
+    @SequenceGenerator(
+            name = "users_sequence",
             sequenceName="users_sequence",
             allocationSize = 1
     )
@@ -37,18 +37,7 @@ public class User implements UserDetails {
             updatable = false
     )
     private long id;
-    @Column(
-            name = "first_name",
-            nullable = false,
-            columnDefinition = "TEXT"
-    )
-    private String firstName;
-    @Column(
-            name = "last_name",
-            nullable = false,
-            columnDefinition = "TEXT"
-    )
-    private String lastName;
+
     @Column(
             name = "email_address",
             nullable = false,
@@ -57,55 +46,70 @@ public class User implements UserDetails {
     private String emailAddress;
 
     @Column(
-            name = "password_hash",
+            name = "first_name",
             nullable = false,
             columnDefinition = "TEXT"
     )
-    @JsonIgnore
-    private String passwordHash;
+    private String firstName;
 
     @Column(
-            name = "password_salt",
+            name = "last_name",
             nullable = false,
             columnDefinition = "TEXT"
     )
-    private String passwordSalt;
+    private String lastName;
+
+    @Column(
+            name = "phone_number",
+            nullable = false,
+            columnDefinition = "TEXT"
+    )
+    private String phoneNumber;
+
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name = "account_id", referencedColumnName = "id", nullable = false)
+    private Account account;
+
     @ManyToOne
-    @JoinColumn(name = "role_id", nullable = false)
-    private UserRole role;
+    @JoinColumn(name = "address_id", referencedColumnName = "id", nullable = false)
+    private Address address;
 
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority(role.getName()));
-    }
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name = "preference_id", referencedColumnName = "id", nullable = false)
+    private UserPreference preference;
 
-    @Override
-    public String getPassword() {
-        return passwordHash;
-    }
+    @Column(
+            name = "created_at",
+            nullable = false
+    )
+    @CreationTimestamp
+    private OffsetDateTime createdAt;
 
-    @Override
-    public String getUsername() {
-        return emailAddress;
-    }
+    @Column(
+            name = "updated_at"
+    )
+    @UpdateTimestamp
+    private OffsetDateTime updatedAt;
 
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return true;
+    public User(
+            final String emailAddress,
+            final String firstName,
+            final String lastName,
+            final String phoneNumber,
+            final Account account,
+            final Address address,
+            final UserPreference preference,
+            final OffsetDateTime createdAt,
+            final OffsetDateTime updatedAt
+    ) {
+        this.emailAddress = emailAddress;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.phoneNumber = phoneNumber;
+        this.account = account;
+        this.address = address;
+        this.preference = preference;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
 }
