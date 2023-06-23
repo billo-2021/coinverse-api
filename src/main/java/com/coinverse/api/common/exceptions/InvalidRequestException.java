@@ -1,6 +1,7 @@
-package com.coinverse.api.core.exceptions;
+package com.coinverse.api.common.exceptions;
 
-import com.coinverse.api.core.models.ApiErrorCode;
+import com.coinverse.api.common.errors.ApiErrorCode;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.http.HttpStatus;
 
 public class InvalidRequestException extends ApiException {
@@ -10,7 +11,7 @@ public class InvalidRequestException extends ApiException {
         this(API_ERROR_CODE.getReason());
     }
 
-    public InvalidRequestException(String message) {
+    public InvalidRequestException(@NotNull final String message) {
         super(message, API_ERROR_CODE, HTTP_STATUS);
     }
 }
