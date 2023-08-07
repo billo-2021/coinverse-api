@@ -4,9 +4,11 @@ import com.coinverse.api.common.config.routes.LookupRoutes;
 import com.coinverse.api.common.constants.PageConstants;
 import com.coinverse.api.common.models.PageResponse;
 import com.coinverse.api.common.models.response.*;
+import com.coinverse.api.common.utils.StringUtils;
 import com.coinverse.api.common.validators.PageRequestValidator;
 import com.coinverse.api.features.lookup.services.LookupService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -64,9 +66,16 @@ public class LookupController {
     @GetMapping(value = LookupRoutes.CRYPTO)
     PageResponse<CryptoCurrencyResponse> getCryptoCurrencies(@RequestParam(value = "pageNumber", defaultValue = PageConstants.DEFAULT_PAGE, required = false) int pageNumber,
                                                              @RequestParam(value = "pageSize", defaultValue = PageConstants.DEFAULT_SIZE, required = false) int pageSize,
+                                                             @RequestParam(value = "query", required = false) String query,
                                                              @RequestParam(value = "sortBy", defaultValue = PageConstants.DEFAULT_SORT_BY, required = false) String sortBy,
                                                              @RequestParam(value = "sortDirection", defaultValue = PageConstants.DEFAULT_SORT_DIRECTION, required = false) String sortDirection) {
-        return lookupService.findAllCryptoCurrencies(PageRequestValidator.validate(pageNumber, pageSize, sortBy, sortDirection));
+        final Pageable pageable = PageRequestValidator.validate(pageNumber, pageSize, sortBy, sortDirection);
+
+        if (!StringUtils.isEmptyOrNull(query)) {
+            return lookupService.findAllCryptoCurrencies(query, pageable);
+        }
+
+        return lookupService.findAllCryptoCurrencies(pageable);
     }
 
     @GetMapping(LookupRoutes.CRYPTO_BY_CURRENCY_CODE)
