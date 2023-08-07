@@ -3,19 +3,16 @@ package com.coinverse.api.features.profile.services;
 import com.coinverse.api.common.entities.*;
 import com.coinverse.api.common.exceptions.InvalidRequestException;
 import com.coinverse.api.common.exceptions.MappingException;
-import com.coinverse.api.common.models.UserAccountEventRequest;
-import com.coinverse.api.common.models.UserAccountEventTypeEnum;
 import com.coinverse.api.common.models.UserResponse;
 import com.coinverse.api.common.models.UserUpdateRequest;
 import com.coinverse.api.common.repositories.*;
 import com.coinverse.api.common.security.models.UserAccount;
-import com.coinverse.api.common.services.UserAccountEventService;
+import com.coinverse.api.common.security.services.UserAccountService;
 import com.coinverse.api.common.services.UserService;
 import com.coinverse.api.features.profile.mappers.ProfileMapper;
 import com.coinverse.api.features.profile.models.*;
 import com.coinverse.api.features.profile.validators.ProfileRequestValidator;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,7 +23,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ProfileService {
     private final UserService userService;
-    private final UserAccountEventService userAccountEventService;
+    private final UserAccountService userAccountService;
     private final UserRepository userRepository;
     private final CountryRepository countryRepository;
     private final AddressRepository addressRepository;
@@ -38,7 +35,7 @@ public class ProfileService {
 
     @Transactional
     public void updateUserProfile(ProfileUpdateRequest profileUpdateRequest) {
-        final UserAccount userPrincipal = getCurrentUser();
+        final UserAccount userPrincipal = userAccountService.getCurrentUser();
 
         UserResponse userResponse = profileRequestValidator.validateUserAccountId(userPrincipal.getId());
         String userEmailAddress = userResponse.getEmailAddress();
@@ -49,7 +46,7 @@ public class ProfileService {
     }
 
     public UserProfileResponse getUserProfile() {
-        final UserAccount userAccount = getCurrentUser();
+        final UserAccount userAccount = userAccountService.getCurrentUser();
         final User user = userRepository.findByAccountId(userAccount.getId())
                 .orElseThrow(() -> new MappingException("Invalid username '" + userAccount.getUsername() + "'"));
 
@@ -58,7 +55,7 @@ public class ProfileService {
 
     @Transactional
     public UserProfileResponse updatePersonalInformation(PersonalInformationUpdateRequest personalInformationUpdateRequest) {
-        final UserAccount userAccount = getCurrentUser();
+        final UserAccount userAccount = userAccountService.getCurrentUser();
         final User user = userRepository.findByAccountId(userAccount.getId())
                 .orElseThrow(() -> new MappingException("Invalid username '" + userAccount.getUsername() + "'"));
 
@@ -68,25 +65,12 @@ public class ProfileService {
         user.setPhoneNumber(personalInformationUpdateRequest.getPhoneNumber());
 
         User savedUser = userRepository.saveAndFlush(user);
-
-        UserAccountEventTypeEnum eventTypeEnum = UserAccountEventTypeEnum.PROFILE_UPDATE;
-
-        UserAccountEventRequest userAccountEventRequest = UserAccountEventRequest
-                .builder()
-                .type(eventTypeEnum.getCode())
-                .description(eventTypeEnum.getDescription())
-                .deviceDetails(personalInformationUpdateRequest.getDeviceDetails())
-                .ipAddress(personalInformationUpdateRequest.getIpAddress())
-                .build();
-
-        userAccountEventService.addEvent(userAccount.getUsername(), userAccountEventRequest);
-
         return profileMapper.userToUserProfileResponse(savedUser);
     }
 
     @Transactional
     public UserProfileResponse updateUserAddress(AddressUpdateRequest addressUpdateRequest) {
-        final UserAccount userAccount = getCurrentUser();
+        final UserAccount userAccount = userAccountService.getCurrentUser();
         final User user = userRepository.findByAccountId(userAccount.getId())
                 .orElseThrow(() -> new MappingException("Invalid username '" + userAccount.getUsername() + "'"));
 
@@ -100,25 +84,12 @@ public class ProfileService {
         address.setCountry(addressCountry);
 
         addressRepository.saveAndFlush(address);
-
-        UserAccountEventTypeEnum eventTypeEnum = UserAccountEventTypeEnum.USER_ADDRESS_UPDATE;
-
-        UserAccountEventRequest userAccountEventRequest = UserAccountEventRequest
-                .builder()
-                .type(eventTypeEnum.getCode())
-                .description(eventTypeEnum.getDescription())
-                .deviceDetails(addressUpdateRequest.getDeviceDetails())
-                .ipAddress(addressUpdateRequest.getIpAddress())
-                .build();
-
-        userAccountEventService.addEvent(userAccount.getUsername(), userAccountEventRequest);
-
         return profileMapper.userToUserProfileResponse(user);
     }
 
     @Transactional
     public UserProfileResponse updateUserPreference(PreferenceUpdateRequest preferenceUpdateRequest) {
-        final UserAccount userAccount = getCurrentUser();
+        final UserAccount userAccount = userAccountService.getCurrentUser();
         final User user = userRepository.findByAccountId(userAccount.getId())
                 .orElseThrow(() -> new MappingException("Invalid username '" + userAccount.getUsername() + "'"));
 
@@ -136,26 +107,8 @@ public class ProfileService {
         final UserPreference userPreference = user.getPreference();
         userPreference.setCurrency(currency);
         userPreference.setNotificationChannels(notificationChannels);
-
         userPreferenceRepository.saveAndFlush(userPreference);
 
-        UserAccountEventTypeEnum eventTypeEnum = UserAccountEventTypeEnum.USER_PREFERENCE_UPDATE;
-
-        UserAccountEventRequest userAccountEventRequest = UserAccountEventRequest
-                .builder()
-                .type(eventTypeEnum.getCode())
-                .description(eventTypeEnum.getDescription())
-                .deviceDetails(preferenceUpdateRequest.getDeviceDetails())
-                .ipAddress(preferenceUpdateRequest.getIpAddress())
-                .build();
-
-        userAccountEventService.addEvent(userAccount.getUsername(), userAccountEventRequest);
-
         return profileMapper.userToUserProfileResponse(user);
-    }
-
-    private UserAccount getCurrentUser() {
-        return (UserAccount) SecurityContextHolder.getContext()
-                .getAuthentication().getPrincipal();
     }
 }
