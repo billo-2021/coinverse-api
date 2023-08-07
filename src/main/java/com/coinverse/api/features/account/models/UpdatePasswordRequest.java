@@ -19,7 +19,4 @@ public class UpdatePasswordRequest {
     private String currentPassword;
     @NotBlank(message = "newPassword is required")
     private String newPassword;
-
-    private String deviceDetails;
-    private String ipAddress;
 }
