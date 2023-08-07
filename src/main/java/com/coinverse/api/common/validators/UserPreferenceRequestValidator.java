@@ -25,7 +25,7 @@ public class UserPreferenceRequestValidator implements RequestValidator<UserPref
     @Override
     public UserPreference validate(@NotNull final UserPreferenceRequest userPreferenceRequest) throws InvalidRequestException, MappingException {
         final Currency preferredCurrency = currencyRepository
-                .findByCode(userPreferenceRequest.getCurrencyCode())
+                .findByCodeIgnoreCase(userPreferenceRequest.getCurrencyCode())
                 .orElseThrow(() ->
                         new ValidationException("Invalid preferred currency '" +
                                 userPreferenceRequest.getCurrencyCode() + "'", "preference.currencyCode")
@@ -35,7 +35,7 @@ public class UserPreferenceRequestValidator implements RequestValidator<UserPref
                 .getNotificationMethods()
                 .stream()
                 .map((notificationMethod) ->
-                        notificationChannelRepository.findByName(notificationMethod)
+                        notificationChannelRepository.findByCodeIgnoreCase(notificationMethod)
                                 .orElseThrow(() ->
                                         new ValidationException("Invalid notification method '" +
                                                 notificationMethod + "'", "preference.notificationMethods")

@@ -13,7 +13,7 @@ public class UserManagerValidator {
     private final AccountRepository accountRepository;
 
     public Account validateUsername(@NotNull final String username) {
-        return accountRepository.findByUsername(username)
+        return accountRepository.findByUsernameIgnoreCase(username)
                 .orElseThrow(InvalidRequestException::new);
     }
 }

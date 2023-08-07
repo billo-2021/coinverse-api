@@ -20,7 +20,7 @@ public class UserRequestValidator implements RequestValidator<UserRequest, User>
 
     @Override
     public User validate(@NotNull final UserRequest userRequest) throws InvalidRequestException, MappingException {
-        userRepository.findByEmailAddress(userRequest.getEmailAddress())
+        userRepository.findByEmailAddressIgnoreCase(userRequest.getEmailAddress())
                 .ifPresent((user) -> {
                     throw new ValidationException("User with email address '" +
                             user.getEmailAddress() + "' already exists", "emailAddress");

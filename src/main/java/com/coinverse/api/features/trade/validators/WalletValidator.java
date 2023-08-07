@@ -12,8 +12,8 @@ import org.springframework.stereotype.Component;
 public class WalletValidator {
     private final AccountRepository accountRepository;
 
-    public Account validateWalletUsername(@NotNull final String username) {
-        return accountRepository.findByUsername(username)
+    public Account validateWalletUsername(String username) {
+        return accountRepository.findByUsernameIgnoreCase(username)
                 .orElseThrow(InvalidRequestException::new);
     }
 }

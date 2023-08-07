@@ -11,7 +11,6 @@ import com.coinverse.api.common.models.AccountStatusEnum;
 import com.coinverse.api.common.repositories.AccountRepository;
 import com.coinverse.api.common.repositories.AccountStatusRepository;
 import com.coinverse.api.common.repositories.RoleRepository;
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -28,8 +27,8 @@ public class AccountRequestValidator implements RequestValidator<AccountRequest,
     private final AccountRepository accountRepository;
 
     @Override
-    public Account validate(@NotNull final AccountRequest accountRequest) throws InvalidRequestException, MappingException {
-        accountRepository.findByUsername(accountRequest.getUsername())
+    public Account validate(AccountRequest accountRequest) throws InvalidRequestException, MappingException {
+        accountRepository.findByUsernameIgnoreCase(accountRequest.getUsername())
                 .ifPresent((account -> {
                     throw new ValidationException("User account with username '" +
                             account.getUsername() + "' already exists", "account.username");
@@ -39,19 +38,16 @@ public class AccountRequestValidator implements RequestValidator<AccountRequest,
 
         final Set<Role> roles = accountRolesRequest
                 .stream()
-                .map(roleName -> {
-                    return roleRepository.findByAuthority(roleName)
-                            .orElseThrow(() ->
-                                    new ValidationException("Invalid role '" + roleName + "'", "account.roles"));
+                .map(roleName -> roleRepository.findByAuthorityIgnoreCase(roleName)
+                        .orElseThrow(() ->
+                                new ValidationException("Invalid role '" + roleName + "'", "account.roles"))).collect(Collectors.toSet());
 
-                }).collect(Collectors.toSet());
-
-        final String pendingVerificationStatusName = AccountStatusEnum.PENDING_VERIFICATION.getName();
+        final String pendingVerificationStatusCode = AccountStatusEnum.PENDING_VERIFICATION.getCode();
 
         final AccountStatus accountStatus = accountStatusRepository
-                .findByName(pendingVerificationStatusName)
+                .findByCodeIgnoreCase(pendingVerificationStatusCode)
                 .orElseThrow(() ->
-                        new MappingException("Invalid account status '" + pendingVerificationStatusName + "'")
+                        new MappingException("Invalid account status '" + pendingVerificationStatusCode + "'")
                 );
 
         return Account.builder()

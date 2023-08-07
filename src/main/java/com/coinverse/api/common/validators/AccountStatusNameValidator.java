@@ -16,7 +16,7 @@ public class AccountStatusNameValidator implements RequestValidator<String, Acco
     @Override
     public AccountStatus validate(@NotNull String statusName) throws InvalidRequestException, MappingException {
         return accountStatusRepository
-                .findByName(statusName)
+                .findByCodeIgnoreCase(statusName)
                 .orElseThrow(() ->
                         new MappingException("Invalid status '" + statusName + "'")
                 );

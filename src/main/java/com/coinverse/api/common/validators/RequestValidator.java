@@ -5,5 +5,5 @@ import com.coinverse.api.common.exceptions.MappingException;
 import jakarta.validation.constraints.NotNull;
 
 public interface RequestValidator<TRequest, TResult> {
-    TResult validate(@NotNull final TRequest request) throws InvalidRequestException, MappingException;
+    TResult validate(TRequest request) throws InvalidRequestException, MappingException;
 }

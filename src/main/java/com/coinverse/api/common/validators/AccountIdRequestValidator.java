@@ -14,7 +14,7 @@ public class AccountIdRequestValidator implements RequestValidator<Long, Account
     private final AccountRepository accountRepository;
 
     @Override
-    public Account validate(@NotNull Long id) throws InvalidRequestException, MappingException {
+    public Account validate(Long id) throws InvalidRequestException, MappingException {
         return accountRepository.findById(id)
                 .orElseThrow(() ->
                         new InvalidRequestException("Invalid account id '" + id + "'")

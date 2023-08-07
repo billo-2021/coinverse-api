@@ -12,8 +12,8 @@ import org.springframework.stereotype.Component;
 public class TradeValidator {
     private final AccountRepository accountRepository;
 
-    public Account validateTradeUsername(@NotNull final String username) {
-        return accountRepository.findByUsername(username)
+    public Account validateTradeUsername(String username) {
+        return accountRepository.findByUsernameIgnoreCase(username)
                 .orElseThrow(InvalidRequestException::new);
     }
 }

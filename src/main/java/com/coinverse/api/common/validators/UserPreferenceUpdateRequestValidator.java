@@ -37,7 +37,7 @@ public class UserPreferenceUpdateRequestValidator implements RequestValidator<Us
         final UserPreference userPreference = new UserPreference();
 
         if (preferredCurrencyCode != null) {
-            Currency currency = currencyRepository.findByCode(preferredCurrencyCode)
+            Currency currency = currencyRepository.findByCodeIgnoreCase(preferredCurrencyCode)
                     .orElseThrow(() -> new ValidationException("Invalid currency '" +
                             preferredCurrencyCode, "preference.currencyCode"));
             userPreference.setCurrency(currency);
@@ -46,7 +46,7 @@ public class UserPreferenceUpdateRequestValidator implements RequestValidator<Us
         if (preferredNotificationMethods != null && !preferredNotificationMethods.isEmpty()) {
             Set<NotificationChannel> notificationChannels = preferredNotificationMethods
                     .stream()
-                    .map(preferredNotificationMethod -> notificationChannelRepository.findByName(preferredNotificationMethod)
+                    .map(preferredNotificationMethod -> notificationChannelRepository.findByCodeIgnoreCase(preferredNotificationMethod)
                             .orElseThrow(() -> new ValidationException("Invalid notification method '" + preferredNotificationMethod, "preference.notificationMethods"))
                     ).collect(Collectors.toSet());
 

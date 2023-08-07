@@ -1,24 +1,31 @@
 package com.coinverse.api.common.validators;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.stereotype.Component;
+import com.coinverse.api.common.exceptions.ValidationException;
 
-@Component
-@RequiredArgsConstructor
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+
 public class PageRequestValidator {
-    private static final Integer DEFAULT_PAGE_NUMBER = 1;
+    private static final Integer DEFAULT_PAGE_NUMBER = 0;
     private static final Integer MAX_PAGE_SIZE = 100;
 
-    public PageRequest validatePageRequest(final Integer pageNumber, final Integer pageSize) {
-        Integer parsedPageNumber = pageNumber == null || pageNumber < DEFAULT_PAGE_NUMBER ?
-                DEFAULT_PAGE_NUMBER :
-                pageNumber;
+    public static Pageable validate(Integer pageNumber, Integer pageSize, String sortBy, String sortDirection) {
+        if (pageNumber < DEFAULT_PAGE_NUMBER) {
+            throw new ValidationException("pageNumber must be greater than or equal to 0");
+        }
 
-        Integer parsedPageSize = (pageSize == null || pageSize >= MAX_PAGE_SIZE) ?
-                MAX_PAGE_SIZE :
-                pageSize;
+        if (pageSize < 1) {
+            throw new ValidationException("pageSize must be greater than or equal to 1");
+        }
 
-        return PageRequest.of(parsedPageNumber - 1, parsedPageSize);
+        if (pageSize > MAX_PAGE_SIZE) {
+            throw new ValidationException("pageSize must be less than or equal to " + MAX_PAGE_SIZE);
+        }
+
+        final Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() :
+                Sort.by(sortBy).descending();
+
+        return PageRequest.of(pageNumber, pageSize, sort);
     }
 }

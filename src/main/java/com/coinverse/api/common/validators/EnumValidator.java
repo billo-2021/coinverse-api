@@ -16,5 +16,5 @@ public @interface EnumValidator {
     Class<? extends Payload>[] payload() default {};
     String detailMessage() default "";
 
-    Class<? extends Enum<?>> target();
+    Class<? extends EnumValidatorComparator<?>> target();
 }

@@ -14,7 +14,7 @@ public class AccountTokenIdRequestValidator implements RequestValidator<Long, Ac
     private final AccountTokenRepository accountTokenRepository;
 
     @Override
-    public AccountToken validate(@NotNull Long id) throws InvalidRequestException, MappingException {
+    public AccountToken validate(Long id) throws InvalidRequestException, MappingException {
         return accountTokenRepository.findById(id)
                 .orElseThrow(() ->
                         new InvalidRequestException("Invalid account verification id '" + id + "'")
