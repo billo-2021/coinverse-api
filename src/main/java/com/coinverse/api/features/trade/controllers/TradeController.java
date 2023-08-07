@@ -1,5 +1,6 @@
 package com.coinverse.api.features.trade.controllers;
 
+import com.coinverse.api.common.config.routes.TradeRoutes;
 import com.coinverse.api.common.constants.PageConstants;
 import com.coinverse.api.common.models.PageResponse;
 import com.coinverse.api.common.validators.PageRequestValidator;
@@ -9,20 +10,16 @@ import com.coinverse.api.features.trade.services.TradeService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping(TradeController.PATH)
+@RequestMapping(TradeRoutes.PATH)
 @RequiredArgsConstructor
 public class TradeController {
-    public static final String PATH = "/api/v1/trades";
-
     private final TradeService tradeService;
     @PostMapping
-    public ResponseEntity<CurrencyTransactionResponse> requestTrade(@Valid @RequestBody TradeRequest tradeRequest) {
-        final CurrencyTransactionResponse transactionResponse = tradeService.requestTrade(tradeRequest);
-        return ResponseEntity.ok(transactionResponse);
+    public CurrencyTransactionResponse requestTrade(@Valid @RequestBody TradeRequest tradeRequest) {
+        return tradeService.requestTrade(tradeRequest);
     }
     @GetMapping
     public PageResponse<CurrencyTransactionResponse> getTrades(
@@ -36,9 +33,8 @@ public class TradeController {
         return tradeService.getTrades(pageable);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<CurrencyTransactionResponse> getTradeById(@PathVariable Long id) {
-        final CurrencyTransactionResponse transactionResponse = tradeService.getTradeById(id);
-        return ResponseEntity.ok(transactionResponse);
+    @GetMapping(TradeRoutes.GET_TRADE_BY_ID)
+    public CurrencyTransactionResponse getTradeById(@PathVariable Long id) {
+        return tradeService.getTradeById(id);
     }
 }
