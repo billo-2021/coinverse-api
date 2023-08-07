@@ -1,88 +1,66 @@
 package com.coinverse.api.features.authentication.controllers;
 
+import com.coinverse.api.common.config.routes.AuthenticationRoutes;
+import com.coinverse.api.common.constants.ApiMessage;
 import com.coinverse.api.common.models.ApiMessageResponse;
 import com.coinverse.api.common.models.UserResponse;
-import com.coinverse.api.common.services.DeviceResolutionService;
-import com.coinverse.api.common.utils.RequestUtil;
 import com.coinverse.api.features.authentication.models.*;
 import com.coinverse.api.features.authentication.services.AuthenticationService;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Objects;
-
 @RestController
-@RequestMapping("/api/v1/authentication")
+@RequestMapping(AuthenticationRoutes.PATH)
 @RequiredArgsConstructor
 public class AuthenticationController {
     private final AuthenticationService authenticationService;
 
-    private final DeviceResolutionService deviceResolutionService;
-
-    @PostMapping("/register")
+    @PostMapping(AuthenticationRoutes.REGISTER)
     public ResponseEntity<UserResponse> register(
-            @Valid @RequestBody final RegisterRequest registerRequest
+            @Valid @RequestBody RegisterRequest registerRequest
     ) {
         final UserResponse registrationResponse = authenticationService.register(registerRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(registrationResponse);
     }
 
-    @PostMapping("/login")
+    @PostMapping(AuthenticationRoutes.LOGIN)
     public ResponseEntity<LoginResponse> login(
-            @Valid @RequestBody final LoginRequest loginRequest,
-            final HttpServletRequest request
+            @Valid @RequestBody LoginRequest loginRequest
     ) {
-        final String deviceDetails = loginRequest.getDeviceDetails();;
-        final String ipAddress = loginRequest.getIpAddress();
-
-        if (Objects.isNull(deviceDetails) || deviceDetails.trim().isEmpty()) {
-            final String userAgentHeader = request.getHeader("user-agent");
-
-            loginRequest.setDeviceDetails(deviceResolutionService.getDeviceDetails(userAgentHeader));
-        }
-
-        if (Objects.isNull(ipAddress) || ipAddress.trim().isEmpty()) {
-            loginRequest.setIpAddress(RequestUtil.extractClientIp(request));
-        }
-
         final LoginResponse loginResponse = authenticationService.login(loginRequest);
         return ResponseEntity.ok(loginResponse);
     }
 
-    @PostMapping("/request-token")
-    public ResponseEntity<ApiMessageResponse> requestToken(@Valid @RequestBody final TokenRequest tokenRequest) {
+    @PostMapping(AuthenticationRoutes.REQUEST_TOKEN)
+    public ApiMessageResponse requestToken(@Valid @RequestBody TokenRequest tokenRequest) {
         authenticationService.requestToken(tokenRequest);
-        return ResponseEntity.ok(new ApiMessageResponse("Account verification token sent"));
+        return ApiMessageResponse.of(ApiMessage.ACCOUNT_VERIFICATION_TOKEN_SENT);
     }
 
-    @PostMapping("/verify")
-    public ResponseEntity<ApiMessageResponse> verifyAccount(
+    @PostMapping(AuthenticationRoutes.VERIFY)
+    public ApiMessageResponse verifyAccount(
             @Valid @RequestBody final TokenVerifyRequest verifyAccountRequest
     ) {
         authenticationService.verifyAccount(verifyAccountRequest);
-        return ResponseEntity.ok(new ApiMessageResponse("Account verified"));
+        return ApiMessageResponse.of(ApiMessage.ACCOUNT_VERIFIED);
     }
 
-    @PostMapping("/reset-password")
-    public ResponseEntity<ResetPasswordTokenResponse> requestResetPasswordToken(@Valid @RequestBody final TokenRequest tokenRequest) {
-        final ResetPasswordTokenResponse resetPasswordTokenResponse = authenticationService.requestResetPasswordToken(tokenRequest);
-        return ResponseEntity.ok(resetPasswordTokenResponse);
+    @PostMapping(AuthenticationRoutes.RESET_PASSWORD)
+    public ResetPasswordTokenResponse requestResetPasswordToken(@Valid @RequestBody TokenRequest tokenRequest) {
+        return authenticationService.requestResetPasswordToken(tokenRequest);
     }
 
-    @PatchMapping("/reset-password")
-    public ResponseEntity<ApiMessageResponse> resetPassword(@Valid @RequestBody final ResetPasswordRequest resetPasswordRequest) {
+    @PatchMapping(AuthenticationRoutes.RESET_PASSWORD)
+    public ApiMessageResponse resetPassword(@Valid @RequestBody ResetPasswordRequest resetPasswordRequest) {
         authenticationService.resetPassword(resetPasswordRequest);
-        return ResponseEntity.ok(new ApiMessageResponse("Account password reset"));
+        return ApiMessageResponse.of(ApiMessage.ACCOUNT_PASSWORD_RESET);
     }
 
-    @GetMapping("/reset-password/{passwordToken}")
-    public ResponseEntity<PasswordTokenUserResponse> requestPasswordTokenUser(@PathVariable String passwordToken) {
-        final PasswordTokenUserResponse passwordTokenUsernameResponse =
-                authenticationService.requestPasswordTokenUser(passwordToken);
-        return ResponseEntity.ok(passwordTokenUsernameResponse);
+    @GetMapping(AuthenticationRoutes.REQUEST_PASSWORD_TOKEN_USER)
+    public PasswordTokenUserResponse requestPasswordTokenUser(@PathVariable String passwordToken) {
+        return authenticationService.requestPasswordTokenUser(passwordToken);
     }
 }
