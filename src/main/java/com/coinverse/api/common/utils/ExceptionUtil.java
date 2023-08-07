@@ -14,7 +14,7 @@ import java.io.StringWriter;
 import java.util.List;
 
 public class ExceptionUtil {
-    public static String getStackTrace(@NotNull final Exception ex) {
+    public static String getStackTrace(Exception ex) {
         final StringWriter stringWriter = new StringWriter();
         final PrintWriter printWriter = new PrintWriter(stringWriter);
         ex.printStackTrace(printWriter);
@@ -22,7 +22,7 @@ public class ExceptionUtil {
         return stringWriter.toString();
     }
 
-    public static ResponseEntity<ErrorResponse> getApiErrorResponse(@NotNull final ApiException apiEx) {
+    public static ResponseEntity<ErrorResponse> getApiErrorResponse(ApiException apiEx) {
         final ErrorResponse errorResponse = ExceptionUtil.apiExceptionToErrorResponse(apiEx);
 
         return ResponseEntity
@@ -31,8 +31,8 @@ public class ExceptionUtil {
     }
 
     public static ResponseEntity<ErrorsResponse> getApiErrorsResponse(
-            @NotNull final ApiException apiException,
-            @NotNull final List<? extends ApiException> apiExceptions
+            ApiException apiException,
+            List<? extends ApiException> apiExceptions
     ) {
         final List<ErrorResponse> errorResponses = apiExceptions.stream()
                 .map(ExceptionUtil::apiExceptionToErrorResponse).toList();
@@ -44,14 +44,14 @@ public class ExceptionUtil {
                 .body(errorsResponse);
     }
 
-    public static ErrorResponse apiExceptionToErrorResponse(@NotNull final ApiException apiEx) {
+    public static ErrorResponse apiExceptionToErrorResponse(ApiException apiEx) {
         return apiEx instanceof ValidationException ?
                 new ValidationErrorResponse((ValidationException) apiEx) :
                 new ErrorResponse(apiEx);
     }
 
     public static ApiException apiAuthenticationExceptionToApiException(
-            @NotNull final ApiAuthenticationException apiAuthenticationException) {
+            ApiAuthenticationException apiAuthenticationException) {
         return new ApiException(
                 apiAuthenticationException.getMessage(),
                 apiAuthenticationException.getApiErrorCode(),
