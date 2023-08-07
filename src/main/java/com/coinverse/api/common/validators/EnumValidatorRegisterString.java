@@ -8,17 +8,17 @@ import java.util.function.BiPredicate;
 import java.util.stream.Stream;
 
 public class EnumValidatorRegisterString implements ConstraintValidator<EnumValidator, String> {
-    private static BiPredicate<? super Enum<?>, String> defaultComparison = (currentEnumValue, testValue) -> {
+    private static BiPredicate<? super EnumValidatorComparator<?>, String> defaultComparison = (currentEnumValue, testValue) -> {
         return currentEnumValue.toString().equals(testValue);
     };
 
-    public static void setDefaultComparison(BiPredicate<? super Enum<?>, String> defaultComparison) {
+    public static void setDefaultComparison(BiPredicate<? super EnumValidatorComparator<?>, String> defaultComparison) {
         Assert.notNull(defaultComparison, "Default comparison can't be null");
         EnumValidatorRegisterString.defaultComparison = defaultComparison;
     }
 
-    private Class<? extends Enum<?>> clazz;
-    private Enum<?>[] valuesArr;
+    private Class<? extends EnumValidatorComparator<?>> clazz;
+    private EnumValidatorComparator<?>[] valuesArr;
 
     @Override
     public void initialize(EnumValidator constraintAnnotation) {
@@ -35,10 +35,7 @@ public class EnumValidatorRegisterString implements ConstraintValidator<EnumVali
 
         boolean present;
         if (EnumValidatorComparator.class.isAssignableFrom(clazz)) {
-            present = Stream.of(valuesArr).anyMatch((t) -> {
-                @SuppressWarnings("unchecked") var testResult = ((EnumValidatorComparator<String>) t).test(value);
-                 return testResult;
-            });
+            present = Stream.of(valuesArr).anyMatch((item) -> item.test(value));
         } else {
             present = Stream.of(valuesArr).anyMatch((t) -> defaultComparison.test(t, value));
         }
