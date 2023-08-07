@@ -7,5 +7,5 @@ import org.mapstruct.MappingConstants;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface WalletMapper {
-    WalletResponse waletToWalletResponse(Wallet wallet);
+    WalletResponse walletToWalletResponse(Wallet wallet);
 }
