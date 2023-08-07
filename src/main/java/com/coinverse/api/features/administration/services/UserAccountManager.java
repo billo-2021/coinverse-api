@@ -15,7 +15,7 @@ public class UserAccountManager {
     private final UserAccountValidator userAccountValidator;
 
     @Transactional
-    public void disableAccount(@NotNull final String username) {
+    public void disableAccount(String username) {
         final Account account = userAccountValidator.validateUsername(username);
         account.setIsEnabled(false);
         accountRepository.save(account);
