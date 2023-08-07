@@ -1,5 +1,6 @@
 package com.coinverse.api.features.balance.controllers;
 
+import com.coinverse.api.common.config.routes.BalanceRoutes;
 import com.coinverse.api.common.constants.PageConstants;
 import com.coinverse.api.common.models.PageResponse;
 import com.coinverse.api.common.validators.PageRequestValidator;
@@ -11,11 +12,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping(BalanceController.PATH)
+@RequestMapping(BalanceRoutes.PATH)
 @RequiredArgsConstructor
 public class BalanceController {
-    public static final String PATH = "/api/v1/balances";
-
     private final BalanceService balanceService;
 
     @GetMapping
@@ -28,13 +27,13 @@ public class BalanceController {
         return balanceService.getBalances(pageable);
     }
 
-    @GetMapping("/all")
+    @GetMapping(BalanceRoutes.ALL_BALANCES)
     public ResponseEntity<PageResponse<WalletResponse>> getAllBalances() {
         final PageResponse<WalletResponse> walletPageResponse = balanceService.getAllBalances();
         return ResponseEntity.ok(walletPageResponse);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping(BalanceRoutes.GET_BALANCE_BY_ID)
     public ResponseEntity<WalletResponse> getBalancesByWalletId(@PathVariable Long id) {
         final WalletResponse walletResponse = balanceService.getBalancesByWalletId(id);
 
