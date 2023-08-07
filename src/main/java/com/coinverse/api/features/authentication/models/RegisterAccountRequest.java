@@ -20,7 +20,4 @@ public class RegisterAccountRequest {
 
     @NotBlank(message = "password is required")
     private String password;
-
-    @NotBlank(message = "roleName is required")
-    private String roleName;
 }
