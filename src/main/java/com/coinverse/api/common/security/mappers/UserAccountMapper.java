@@ -50,7 +50,7 @@ public abstract class UserAccountMapper {
 
     public AccountStatusEnum accountStatusToAccountStatusEnum(final @NotNull AccountStatus accountStatus) {
         return AccountStatusEnum
-                .of(accountStatus.getName())
+                .of(accountStatus.getCode())
                 .orElseThrow(() ->
                         new MappingException("Invalid account status '" + accountStatus.getName() + "'")
                 );

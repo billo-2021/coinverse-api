@@ -10,16 +10,15 @@ import java.util.Set;
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public abstract class AuthenticationMapper {
     @BeanMapping(builder = @Builder(disableBuilder = true))
-    public abstract UserRequest registerRequestToUserRequest(final RegisterRequest registerRequest, @Context final PasswordEncoder passwordEncoder);
+    public abstract UserRequest registerRequestToUserRequest(RegisterRequest registerRequest, @Context PasswordEncoder passwordEncoder);
 
-    @Mapping(source = "roleName", target = "roles")
-    public abstract AccountRequest registerAccountRequestToAccountRequest(final RegisterAccountRequest registerAccountRequest, @Context final PasswordEncoder passwordEncoder);
+    public abstract AccountRequest registerAccountRequestToAccountRequest(RegisterAccountRequest registerAccountRequest, @Context PasswordEncoder passwordEncoder);
 
-    public abstract AddressRequest registerAddressRequestToAddressRequest(final RegisterAddressRequest registerAddressRequest);
+    public abstract AddressRequest registerAddressRequestToAddressRequest(RegisterAddressRequest registerAddressRequest);
 
-    public abstract UserPreferenceRequest registerPreferenceRequestToUserPreferenceRequest(final RegisterPreferenceRequest registerPreferenceRequest);
+    public abstract UserPreferenceRequest registerPreferenceRequestToUserPreferenceRequest(RegisterPreferenceRequest registerPreferenceRequest);
 
-    protected Set<String> roleNameToRoleNames(final String roleName) {
+    protected Set<String> roleNameToRoleNames(String roleName) {
         return Set.of(roleName);
     }
 }
