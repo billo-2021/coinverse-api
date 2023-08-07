@@ -12,21 +12,21 @@ import lombok.NoArgsConstructor;
 @Builder
 @Entity
 @Table(
-        name = "crypto_transaction_statuses",
+        name = "currency_transaction_actions",
         uniqueConstraints = {
-                @UniqueConstraint(name = "crypto_transaction_statuses_unique", columnNames = "name")
+                @UniqueConstraint(name = "currency_transaction_actions_name_unique", columnNames = "name")
         }
 )
-public class CryptoTransactionStatus {
+public class CurrencyTransactionAction {
     @Id
     @SequenceGenerator(
-            name = "crypto_transaction_statuses_sequence",
-            sequenceName = "crypto_transaction_statuses_sequence",
+            name = "currency_transaction_actions_sequence",
+            sequenceName = "currency_transaction_actions_sequence",
             allocationSize = 1
     )
     @GeneratedValue(
             strategy = GenerationType.SEQUENCE,
-            generator = "crypto_transaction_statuses_sequence"
+            generator = "currency_transaction_actions_sequence"
     )
     @Column(
             name = "id",
@@ -35,13 +35,21 @@ public class CryptoTransactionStatus {
     private Long id;
 
     @Column(
+            name = "code",
+            nullable = false,
+            columnDefinition = "TEXT"
+    )
+    private String code;
+
+    @Column(
             name = "name",
             nullable = false,
             columnDefinition = "TEXT"
     )
     private String name;
 
-    public CryptoTransactionStatus(final String name) {
+    public CurrencyTransactionAction(String code, String name) {
+        this.code = code;
         this.name = name;
     }
 }

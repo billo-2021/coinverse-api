@@ -1,6 +1,6 @@
 package com.coinverse.api.common.services;
 
-import com.coinverse.api.common.models.CryptoCurrencyKey;
+import com.coinverse.api.common.models.WalletKey;
 import lombok.RequiredArgsConstructor;
 import org.bitcoinj.base.Base58;
 import org.springframework.stereotype.Component;
@@ -14,8 +14,8 @@ import java.security.spec.ECPoint;
 
 @Component
 @RequiredArgsConstructor
-public class CryptoCurrencyKeyGenerator {
-    public CryptoCurrencyKey generate() {
+public class WalletKeyGenerator {
+    public WalletKey generate() {
         try {
             KeyPairGenerator keyGen =  KeyPairGenerator.getInstance("EC", "SunEC");
             ECGenParameterSpec ecSpec = new ECGenParameterSpec("secp256r1");
@@ -54,7 +54,7 @@ public class CryptoCurrencyKeyGenerator {
 
             String address = Base58.encode(a1);
 
-            return new CryptoCurrencyKey(privateKeyStr, publicKeyStr, address);
+            return new WalletKey(privateKeyStr, publicKeyStr, address);
         } catch (NoSuchAlgorithmException | InvalidAlgorithmParameterException | NoSuchProviderException e) {
             throw new RuntimeException("Unable to generate key ", e);
         }

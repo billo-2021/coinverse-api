@@ -5,7 +5,7 @@ import lombok.Data;
 
 @AllArgsConstructor
 @Data
-public class CryptoCurrencyKey {
+public class WalletKey {
     private String privateKey;
     private String publicKey;
     private String address;

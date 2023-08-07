@@ -1,16 +1,17 @@
 package com.coinverse.api.features.trade.models;
 
+import com.coinverse.api.features.balance.models.CryptoCurrencyResponse;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
-import java.math.BigDecimal;
-
 @AllArgsConstructor
 @Data
 @Builder
+@JsonPropertyOrder({"id", "address", "currency", "balance"})
 public class WalletResponse {
-    private CryptoCurrencyResponse currency;
+    private Long id;
     private String address;
-    private BigDecimal balance;
+    private CryptoCurrencyResponse currency;
 }

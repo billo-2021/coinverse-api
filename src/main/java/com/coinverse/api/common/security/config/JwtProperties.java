@@ -1,4 +1,4 @@
-package com.coinverse.api.features.authentication.config;
+package com.coinverse.api.common.security.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

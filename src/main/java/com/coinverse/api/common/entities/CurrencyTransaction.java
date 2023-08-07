@@ -16,17 +16,17 @@ import java.time.OffsetDateTime;
 @Data
 @Builder
 @Entity
-@Table(name = "crypto_transactions")
-public class CryptoTransaction {
+@Table(name = "currency_transactions")
+public class CurrencyTransaction {
     @Id
     @SequenceGenerator(
-            name = "crypto_transactions_sequence",
+            name = "currency_transactions_sequence",
             sequenceName = "crypto_transactions_sequence",
             allocationSize = 1
     )
     @GeneratedValue(
             strategy = GenerationType.SEQUENCE,
-            generator = "crypto_transactions_sequence"
+            generator = "currency_transactions_sequence"
     )
     @Column(
             name = "id",
@@ -36,21 +36,19 @@ public class CryptoTransaction {
 
     @Column(
             name = "amount",
+            precision = 38,
+            scale = 5,
             nullable = false
     )
     private BigDecimal amount;
 
     @ManyToOne
-    @JoinColumn(name = "amount_currency_id", referencedColumnName = "id", nullable = false)
-    private CryptoCurrency amountCurrency;
-
-    @ManyToOne
-    @JoinColumn(name = "exchange_rate_id", referencedColumnName = "id", nullable = false)
-    private CryptoCurrencyExchangeRate exchangeRate;
+    @JoinColumn(name = "currency_id", referencedColumnName = "id", nullable = false)
+    private Currency currency;
 
     @ManyToOne
     @JoinColumn(name = "action_id", referencedColumnName = "id", nullable = false)
-    private CryptoTransactionAction action;
+    private CurrencyTransactionAction action;
 
     @ManyToOne
     @JoinColumn(name = "account_id", referencedColumnName = "id", nullable = false)
@@ -66,7 +64,7 @@ public class CryptoTransaction {
 
     @ManyToOne
     @JoinColumn(name = "status_id", referencedColumnName = "id", nullable = false)
-    private CryptoTransactionStatus status;
+    private CurrencyTransactionStatus status;
 
     @Column(
             name = "created_at",
@@ -81,19 +79,17 @@ public class CryptoTransaction {
     @UpdateTimestamp
     private OffsetDateTime updatedAt;
 
-    public CryptoTransaction(final BigDecimal amount,
-                             final CryptoCurrency amountCurrency,
-                             final CryptoCurrencyExchangeRate exchangeRate,
-                             final CryptoTransactionAction action,
-                             final Account account,
-                             final Wallet sourceWallet,
-                             final Wallet destinationWallet,
-                             final CryptoTransactionStatus status,
-                             final OffsetDateTime createdAt,
-                             final OffsetDateTime updatedAt) {
+    public CurrencyTransaction(final BigDecimal amount,
+                               final Currency currency,
+                               final CurrencyTransactionAction action,
+                               final Account account,
+                               final Wallet sourceWallet,
+                               final Wallet destinationWallet,
+                               final CurrencyTransactionStatus status,
+                               final OffsetDateTime createdAt,
+                               final OffsetDateTime updatedAt) {
         this.amount = amount;
-        this.amountCurrency = amountCurrency;
-        this.exchangeRate = exchangeRate;
+        this.currency = currency;
         this.action = action;
         this.account = account;
         this.sourceWallet = sourceWallet;
