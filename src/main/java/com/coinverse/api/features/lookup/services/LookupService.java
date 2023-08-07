@@ -24,6 +24,7 @@ public interface LookupService {
 
     List<CryptoCurrencyResponse> findAllCryptoCurrencies();
     PageResponse<CryptoCurrencyResponse> findAllCryptoCurrencies(Pageable pageable);
+    PageResponse<CryptoCurrencyResponse> findAllCryptoCurrencies(String query, Pageable pageable);
     CryptoCurrencyResponse findCryptoCurrencyByCurrencyCode(String code);
 
     List<CurrencyPairResponse> findAllCurrencyPairs();
