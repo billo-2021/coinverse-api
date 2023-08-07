@@ -6,11 +6,12 @@ import com.coinverse.api.features.transfer.models.PaymentResponse;
 import com.coinverse.api.features.transfer.models.WithdrawRequest;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 public interface TransferService {
-    PaymentResponse deposit(@NotNull final DepositRequest depositRequest);
-    PaymentResponse withdraw(@NotNull final WithdrawRequest withdrawRequest);
+    PaymentResponse deposit(DepositRequest depositRequest);
+    PaymentResponse withdraw(WithdrawRequest withdrawRequest);
 
-    PageResponse<PaymentResponse> getTransactions(@NotNull final PageRequest pageRequest);
-    PaymentResponse getTransactionById(@NotNull final Long id);
+    PageResponse<PaymentResponse> getTransactions(Pageable pageable);
+    PaymentResponse getTransactionById(Long id);
 }

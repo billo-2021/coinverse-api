@@ -3,7 +3,10 @@ package com.coinverse.api.features.balance.services;
 import com.coinverse.api.common.models.PageResponse;
 import com.coinverse.api.common.security.models.UserAccount;
 import com.coinverse.api.features.balance.models.WalletResponse;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -13,17 +16,23 @@ public class BalanceServiceImpl implements BalanceService {
     private final WalletService walletService;
 
     @Override
-    public PageResponse<WalletResponse> getBalances() {
+    public PageResponse<WalletResponse> getBalances(Pageable pageable) {
         final UserAccount currentUser = getCurrentUser();
 
-        return walletService.getBalances(currentUser.getUsername());
+        return walletService.getWallets(currentUser.getUsername(), pageable);
+    }
+
+    @Override
+    public PageResponse<WalletResponse> getAllBalances() {
+        final UserAccount currentUser = getCurrentUser();
+        return walletService.getAllWallets(currentUser.getUsername());
     }
 
     @Override
     public WalletResponse getBalancesByWalletId(Long id) {
         final UserAccount currentUser = getCurrentUser();
 
-        return walletService.getBalancesByWalletId(currentUser.getUsername(), id);
+        return walletService.getWalletById(currentUser.getUsername(), id);
     }
 
     private UserAccount getCurrentUser() {

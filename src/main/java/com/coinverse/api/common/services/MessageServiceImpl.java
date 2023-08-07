@@ -11,22 +11,22 @@ import java.util.Optional;
 @Service
 public class MessageServiceImpl implements MessageService {
     @Override
-    public Optional<MessageResponse> getMessageById(final @NotNull Long id) {
+    public Optional<MessageResponse> getMessageById(Long id) {
         return Optional.empty();
     }
 
     @Override
-    public List<MessageResponse> getMessageByAccountId(final @NotNull Long accountId) {
+    public List<MessageResponse> getMessageByAccountId(Long accountId) {
         return null;
     }
 
     @Override
-    public void addMessage(final @NotNull Long accountId, final @NotNull MessageRequest messageRequest) {
+    public void addMessage(Long accountId, MessageRequest messageRequest) {
 
     }
 
     @Override
-    public void deleteMessage(final @NotNull Long id) {
+    public void deleteMessage(Long id) {
 
     }
 }
