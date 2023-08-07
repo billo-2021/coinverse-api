@@ -24,7 +24,4 @@ public class PersonalInformationUpdateRequest {
 
     @NotBlank(message = "phoneNumber is required")
     private String phoneNumber;
-
-    private String deviceDetails;
-    private String ipAddress;
 }
