@@ -35,13 +35,21 @@ public class PaymentAction {
     private Long id;
 
     @Column(
+            name = "code",
+            nullable = false,
+            columnDefinition = "TEXT"
+    )
+    private String code;
+
+    @Column(
             name = "name",
             nullable = false,
             columnDefinition = "TEXT"
     )
     private String name;
 
-    public PaymentAction(final String name) {
+    public PaymentAction(String code, String name) {
+        this.code = code;
         this.name = name;
     }
 }

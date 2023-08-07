@@ -1,16 +1,18 @@
 package com.coinverse.api.common.entities;
 
-import com.fasterxml.jackson.annotation.JsonRawValue;
+import io.hypersistence.utils.hibernate.type.json.JsonType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.Type;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
+import java.util.Map;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -37,13 +39,11 @@ public class Payment {
 
     @Column(
             name = "amount",
+            precision = 38,
+            scale = 5,
             nullable = false
     )
     private BigDecimal amount;
-
-//    @ManyToOne
-//    @JoinColumn(name = "exchange_rate_id", referencedColumnName = "id", nullable = false)
-//    private CurrencyExchangeRate exchangeRate;
 
     @ManyToOne
     @JoinColumn(name = "currency_id", referencedColumnName = "id", nullable = false)
@@ -61,9 +61,9 @@ public class Payment {
     @JoinColumn(name = "account_id", referencedColumnName = "id", nullable = false)
     private Account account;
 
-    @Column(name = "meta_data", columnDefinition = "json")
-    @JsonRawValue
-    private String metaData;
+    @Type(value = JsonType.class)
+    @Column(name = "meta_data", columnDefinition = "jsonb")
+    private Map<String, String> metaData;
 
     @ManyToOne
     @JoinColumn(name = "status_id", referencedColumnName = "id", nullable = false)
@@ -87,7 +87,7 @@ public class Payment {
                    final PaymentMethod method,
                    final PaymentAction action,
                    final Account account,
-                   final String metaData,
+                   final Map<String, String> metaData,
                    final PaymentStatus status,
                    final OffsetDateTime createdAt,
                    final OffsetDateTime updatedAt) {

@@ -12,18 +12,18 @@ import lombok.NoArgsConstructor;
 @Builder
 @Entity
 @Table(
-        name = "message_statuses"
+        name = "events"
 )
-public class MessageStatus {
+public class Event {
     @Id
     @SequenceGenerator(
-            name = "message_statuses_sequence",
-            sequenceName = "message_statuses_sequence",
+            name = "events_sequence",
+            sequenceName = "events_sequence",
             allocationSize = 1
     )
     @GeneratedValue(
             strategy = GenerationType.SEQUENCE,
-            generator = "message_statuses_sequence"
+            generator = "events_sequence"
     )
     @Column(
             name = "id",
@@ -31,22 +31,18 @@ public class MessageStatus {
     )
     private Long id;
 
-    @Column(
-            name = "code",
-            nullable = false,
-            columnDefinition = "TEXT"
-    )
-    private String code;
+    @ManyToOne
+    @JoinColumn(name = "event_type_id", referencedColumnName = "id", nullable = false)
+    private EventType type;
 
     @Column(
-            name = "name",
-            nullable = false,
+            name = "description",
             columnDefinition = "TEXT"
     )
-    private String name;
+    private String description;
 
-    public MessageStatus(String code, String name) {
-        this.code = code;
-        this.name = name;
+    public Event(final EventType type, final String description) {
+        this.type = type;
+        this.description = description;
     }
 }

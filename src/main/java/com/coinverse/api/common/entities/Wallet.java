@@ -40,7 +40,7 @@ public class Wallet {
 
     @ManyToOne
     @JoinColumn(name = "currency_id", referencedColumnName = "id", nullable = false)
-    private CryptoCurrency currency;
+    private Currency currency;
 
     @Column(
             name = "private_key",
@@ -65,6 +65,8 @@ public class Wallet {
 
     @Column(
             name = "balance",
+            precision = 38,
+            scale = 5,
             nullable = false
     )
     private BigDecimal balance;
@@ -83,7 +85,7 @@ public class Wallet {
     private OffsetDateTime updatedAt;
 
     public Wallet(final Account account,
-                  final CryptoCurrency currency,
+                  final Currency currency,
                   final String privateKey,
                   final String publicKey,
                   final String address,

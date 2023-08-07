@@ -32,13 +32,21 @@ public class NotificationChannel {
     private Long id;
 
     @Column(
+            name = "code",
+            nullable = false,
+            columnDefinition = "TEXT"
+    )
+    private String code;
+
+    @Column(
             name = "name",
             nullable = false,
             columnDefinition = "TEXT"
     )
     private String name;
 
-    public NotificationChannel(final String name) {
+    public NotificationChannel(String code, String name) {
+        this.code = code;
         this.name = name;
     }
 }

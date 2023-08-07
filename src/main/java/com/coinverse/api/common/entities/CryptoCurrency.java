@@ -11,12 +11,7 @@ import lombok.NoArgsConstructor;
 @Data
 @Builder
 @Entity
-@Table(
-        name = "crypto_currencies",
-        uniqueConstraints = {
-                @UniqueConstraint(name = "crypto_currencies_code_unique", columnNames = "code")
-        }
-)
+@Table(name = "crypto_currencies")
 public class CryptoCurrency {
     @Id
     @SequenceGenerator(
@@ -39,39 +34,14 @@ public class CryptoCurrency {
     private Currency currency;
 
     @Column(
-            name = "code",
-            nullable = false,
-            columnDefinition = "TEXT"
-    )
-    private String code;
-
-    @Column(
-            name = "name",
-            nullable = false,
-            columnDefinition = "TEXT"
-    )
-    private String name;
-
-    @Column(
-            name = "symbol",
-            nullable = false,
-            columnDefinition = "TEXT"
-    )
-    private String symbol;
-
-    @Column(
             name = "circulating_supply",
             nullable = false
     )
     private Long circulatingSupply;
 
-    public CryptoCurrency(final String code,
-                          final String name,
-                          final String symbol,
+    public CryptoCurrency(final Currency currency,
                           final Long circulatingSupply) {
-        this.code = code;
-        this.name = name;
-        this.symbol = symbol;
+        this.currency = currency;
         this.circulatingSupply = circulatingSupply;
     }
 }

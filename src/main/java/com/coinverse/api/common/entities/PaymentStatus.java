@@ -35,13 +35,21 @@ public class PaymentStatus {
     private Long id;
 
     @Column(
+            name = "code",
+            nullable = false,
+            columnDefinition = "TEXT"
+    )
+    private String code;
+
+    @Column(
             name = "name",
             nullable = false,
             columnDefinition = "TEXT"
     )
     private String name;
 
-    public PaymentStatus(final String name) {
+    public PaymentStatus(String code, String name) {
+        this.code = code;
         this.name = name;
     }
 }

@@ -40,12 +40,16 @@ public class CurrencyExchangeRate {
 
     @Column(
             name = "bid_rate",
+            precision = 38,
+            scale = 5,
             nullable = false
     )
     private BigDecimal bidRate;
 
     @Column(
             name = "ask_rate",
+            precision = 38,
+            scale = 5,
             nullable = false
     )
     private BigDecimal askRate;

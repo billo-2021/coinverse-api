@@ -34,6 +34,10 @@ public class CurrencyPair {
     )
     private Long id;
 
+    @ManyToOne
+    @JoinColumn(name = "type_id", referencedColumnName = "id", nullable = false)
+    private CurrencyPairType type;
+
     @Column(
             name = "name",
             nullable = false,
@@ -49,7 +53,11 @@ public class CurrencyPair {
     @JoinColumn(name = "quote_currency_id", referencedColumnName = "id", nullable = false)
     private Currency quoteCurrency;
 
-    public CurrencyPair(final String name, final Currency baseCurrency, final Currency quoteCurrency) {
+    public CurrencyPair(final CurrencyPairType type,
+                        final String name,
+                        final Currency baseCurrency,
+                        final Currency quoteCurrency) {
+        this.type = type;
         this.name = name;
         this.baseCurrency = baseCurrency;
         this.quoteCurrency = quoteCurrency;

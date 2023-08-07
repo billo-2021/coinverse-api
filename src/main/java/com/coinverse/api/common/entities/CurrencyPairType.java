@@ -12,21 +12,18 @@ import lombok.NoArgsConstructor;
 @Builder
 @Entity
 @Table(
-        name = "roles",
-        uniqueConstraints = {
-                @UniqueConstraint(name = "roles_authority_unique", columnNames = "authority")
-        }
+        name = "currency_pair_types"
 )
-public class Role {
+public class CurrencyPairType {
     @Id
     @SequenceGenerator(
-            name = "roles_sequence",
-            sequenceName = "roles_sequence",
+            name = "currency_pair_types_sequence",
+            sequenceName = "currency_pair_types_sequence",
             allocationSize = 1
     )
     @GeneratedValue(
             strategy = GenerationType.SEQUENCE,
-            generator = "roles_sequence"
+            generator = "currency_pair_types_sequence"
     )
     @Column(
             name = "id",
@@ -35,11 +32,11 @@ public class Role {
     private Long id;
 
     @Column(
-            name = "authority",
+            name = "code",
             nullable = false,
             columnDefinition = "TEXT"
     )
-    private String authority;
+    private String code;
 
     @Column(
             name = "name",
@@ -48,8 +45,8 @@ public class Role {
     )
     private String name;
 
-    public Role(String authority, String name) {
-        this.authority = authority;
+    public CurrencyPairType(String code, String name) {
+        this.code = code;
         this.name = name;
     }
 }

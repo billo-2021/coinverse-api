@@ -33,6 +33,10 @@ public class Currency {
     )
     private Long id;
 
+    @ManyToOne
+    @JoinColumn(name = "type_id", referencedColumnName = "id", nullable = false)
+    private CurrencyType type;
+
     @Column(
             name = "code",
             nullable = false,
@@ -62,7 +66,12 @@ public class Currency {
     )
     private Set<Country> countries;
 
-    public Currency(final String code, final String name, final String symbol, final Set<Country> countries) {
+    public Currency(final CurrencyType type,
+                    final String code,
+                    final String name,
+                    final String symbol,
+                    final Set<Country> countries) {
+        this.type = type;
         this.code = code;
         this.name = name;
         this.symbol = symbol;
