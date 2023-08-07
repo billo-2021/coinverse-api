@@ -32,6 +32,12 @@ public class CryptoCurrencyService {
         return cryptoCurrencyMapper.cryptoCurrencyPageToCryptoCurrencyPageResponse(cryptoCurrencyPage);
     }
 
+    public PageResponse<CryptoCurrencyResponse> findAll(String query, Pageable pageable) {
+        final Page<CryptoCurrency> cryptoCurrencyPage = cryptoCurrencyRepository.search(query, pageable);
+
+        return cryptoCurrencyMapper.cryptoCurrencyPageToCryptoCurrencyPageResponse(cryptoCurrencyPage);
+    }
+
     public CryptoCurrencyResponse findByCurrencyCode(String code) {
         final CryptoCurrency cryptoCurrency = cryptoCurrencyRepository.findByCurrencyCodeIgnoreCase(code)
                 .orElseThrow(() -> new InvalidRequestException("Invalid currency code '" + code + "'"));
