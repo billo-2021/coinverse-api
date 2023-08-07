@@ -11,9 +11,9 @@ public class LoginAuthenticationException extends ApiAuthenticationException {
     private final AccountResponse account;
     private final AuthenticationException exception;
 
-    public LoginAuthenticationException(@NotNull final LoginRequest request,
-                                        @NotNull final AccountResponse account,
-                                        @NotNull final AuthenticationException exception) {
+    public LoginAuthenticationException(LoginRequest request,
+                                        AccountResponse account,
+                                        AuthenticationException exception) {
         this.request = request;
         this.account = account;
         this.exception = exception;
