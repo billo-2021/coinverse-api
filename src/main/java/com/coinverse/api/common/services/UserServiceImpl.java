@@ -8,7 +8,6 @@ import com.coinverse.api.common.repositories.*;
 import com.coinverse.api.common.validators.UserEmailAddressRequestValidator;
 import com.coinverse.api.common.validators.UserPreferenceUpdateRequestValidator;
 import com.coinverse.api.common.validators.UserRequestValidator;
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,27 +25,27 @@ public class UserServiceImpl implements UserService {
     private final AddressRepository addressRepository;
     private final UserPreferenceRepository userPreferenceRepository;
     private final WalletRepository walletRepository;
-    private final CryptoCurrencyRepository cryptoCurrencyRepository;
-    private final CryptoCurrencyKeyGenerator cryptoCurrencyKeyGenerator;
+    private final CurrencyRepository currencyRepository;
+    private final WalletKeyGenerator walletKeyGenerator;
     private final UserMapper userMapper;
     private final UserRequestValidator userRequestValidator;
     private final UserEmailAddressRequestValidator userEmailAddressRequestValidator;
     private final UserPreferenceUpdateRequestValidator userPreferenceUpdateRequestValidator;
 
     @Override
-    public Optional<UserResponse> getUserById(@NotNull final Long id) {
+    public Optional<UserResponse> getUserById(Long id) {
         final Optional<User> userResponse = userRepository.findById(id);
         return userResponse.map(userMapper::userToUserResponse);
     }
 
     @Override
-    public Optional<UserResponse> getUserByEmailAddress(@NotNull final String emailAddress) {
-        final Optional<User> userResponse = userRepository.findByEmailAddress(emailAddress);
+    public Optional<UserResponse> getUserByEmailAddress(String emailAddress) {
+        final Optional<User> userResponse = userRepository.findByEmailAddressIgnoreCase(emailAddress);
         return userResponse.map(userMapper::userToUserResponse);
     }
 
     @Override
-    public Optional<UserResponse> getUserByAccountId(@NotNull final Long accountId) {
+    public Optional<UserResponse> getUserByAccountId(Long accountId) {
         final Optional<User> userResponse = userRepository.findByAccountId(accountId);
         return userResponse.map(userMapper::userToUserResponse);
     }
@@ -59,33 +58,33 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
-    public UserResponse addUser(@NotNull final UserRequest userRequest) {
+    public UserResponse addUser(UserRequest userRequest) {
        final User user = userRequestValidator.validate(userRequest);
 
        final Account account = user.getAccount();
-       accountRepository.save(account);
+       accountRepository.saveAndFlush(account);
 
        final Address address = user.getAddress();
-       addressRepository.save(address);
+       addressRepository.saveAndFlush(address);
 
        final UserPreference userPreference = user.getPreference();
        userPreferenceRepository.save(userPreference);
 
-       final User savedUser = userRepository.save(user);
+       final User savedUser = userRepository.saveAndFlush(user);
+       final List<Currency> walletCurrencies = currencyRepository.findAll();
 
-        final List<CryptoCurrency> walletCurrencies = cryptoCurrencyRepository.findAll();
         final List<Wallet> wallets = walletCurrencies
                 .stream()
                 .map(walletCurrency -> {
-                    final CryptoCurrencyKey currencyKey = cryptoCurrencyKeyGenerator.generate();
+                    final WalletKey walletKey = walletKeyGenerator.generate();
 
                     return Wallet.
                             builder()
                             .account(account)
                             .currency(walletCurrency)
-                            .privateKey(currencyKey.getPrivateKey())
-                            .publicKey(currencyKey.getPublicKey())
-                            .address(currencyKey.getAddress())
+                            .privateKey(walletKey.getPrivateKey())
+                            .publicKey(walletKey.getPublicKey())
+                            .address(walletKey.getAddress())
                             .balance(BigDecimal.valueOf(0))
                             .build();
                         }
@@ -96,7 +95,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponse updateUser(@NotNull final Long id, @NotNull final UserRequest userRequest) {
+    public UserResponse updateUser(Long id, UserRequest userRequest) {
         final User existingUser = userRepository.findById(id).orElseThrow(
                 () -> new InvalidRequestException("Invalid user id '" + id + "'")
         );
@@ -110,7 +109,7 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
-    public void updateUserByEmailAddress(@NotNull String emailAddress, @NotNull UserUpdateRequest userUpdateRequest) {
+    public void updateUserByEmailAddress(String emailAddress, UserUpdateRequest userUpdateRequest) {
         String phoneNumber = userUpdateRequest.getPhoneNumber();
         UserPreferenceUpdateRequest userPreferenceUpdateRequest = userUpdateRequest.getPreference();
 
@@ -146,7 +145,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void deleteUser(@NotNull final Long id) {
+    public void deleteUser(Long id) {
         userRepository.deleteById(id);
     }
 }

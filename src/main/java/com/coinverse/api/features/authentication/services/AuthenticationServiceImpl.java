@@ -3,24 +3,24 @@ package com.coinverse.api.features.authentication.services;
 import com.coinverse.api.common.models.*;
 import com.coinverse.api.common.security.exceptions.*;
 import com.coinverse.api.common.services.AccountService;
+import com.coinverse.api.common.services.UserAccountEventService;
 import com.coinverse.api.common.services.UserService;
-import com.coinverse.api.common.security.models.UserAccount;
+import com.coinverse.api.common.security.services.JwtService;
 import com.coinverse.api.features.authentication.exceptions.LoginAuthenticationException;
 import com.coinverse.api.features.authentication.mappers.AuthenticationMapper;
 import com.coinverse.api.features.authentication.models.*;
 import com.coinverse.api.features.authentication.validators.LoginRequestValidator;
-import com.coinverse.api.features.messaging.models.MessagingChannel;
-import jakarta.validation.constraints.NotNull;
+import com.coinverse.api.features.messaging.models.MessagingChannelEnum;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -36,9 +36,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     private final ResetPasswordService resetPasswordService;
 
+    private final UserAccountEventService userAccountEventService;
+
     @Override
-    public UserResponse register(@NotNull final RegisterRequest registerRequest) {
+    public UserResponse register(RegisterRequest registerRequest) {
         final UserRequest userRequest = authenticationMapper.registerRequestToUserRequest(registerRequest, passwordEncoder);
+        final RoleEnum roleEnum = RoleEnum.CUSTOMER;
+        userRequest.getAccount().setRoles(Set.of(roleEnum.getAuthority()));
+
         final UserResponse userResponse = userService.addUser(userRequest);
         final AccountResponse accountResponse = userResponse.getAccount();
 
@@ -48,7 +53,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     @Override
-    public LoginResponse login(@NotNull final LoginRequest loginRequest) {
+    public LoginResponse login(LoginRequest loginRequest) {
         final AccountResponse accountResponse = loginRequestValidator.validate(loginRequest);
 
         try {
@@ -62,66 +67,100 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                     authenticate(usernamePasswordAuthToken);
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            final UserAccount userPrincipal = (UserAccount) authentication.getPrincipal();
-
-            final UserResponse userResponse = userService.getUserByAccountId(userPrincipal.getId())
-                    .orElseThrow(InvalidCredentialsException::new);
-
             accountService.resetAccountLoginAttemptsById(accountResponse.getId());
 
-            final List<String> roles = userPrincipal
-                    .getAuthorities().stream()
-                    .map(GrantedAuthority::getAuthority)
-                    .toList();
+            UserAccountEventTypeEnum eventTypeEnum = UserAccountEventTypeEnum.LOGIN_ATTEMPT_SUCCESS;
 
+            UserAccountEventRequest userAccountEventRequest = UserAccountEventRequest
+                    .builder()
+                    .type(eventTypeEnum.getCode())
+                    .description(eventTypeEnum.getDescription())
+                    .deviceDetails(loginRequest.getDeviceDetails())
+                    .ipAddress(loginRequest.getIpAddress())
+                    .build();
+
+            userAccountEventService.addEvent(accountResponse.getUsername(), userAccountEventRequest);
             checkToRequestToken(accountResponse);
 
-            final String token = jwtService.issueToken(
-                    userPrincipal.getUsername(),
-                    userPrincipal.getUsername(),
-                    roles
-            );
-
-            return LoginResponse
-                    .builder()
-                    .user(userResponse)
-                    .accessToken(token)
-                    .build();
+            return getLoginResponse(accountResponse);
         } catch (AuthenticationException ex) {
+            final boolean passwordsMatch = passwordEncoder
+                    .matches(loginRequest.getPassword(), accountResponse.getPassword());
+
+            if (passwordsMatch && ex instanceof DisabledException && accountResponse.getIsEnabled()) {
+                UserAccountEventTypeEnum eventTypeEnum = UserAccountEventTypeEnum.LOGIN_ATTEMPT_SUCCESS;
+
+                UserAccountEventRequest userAccountEventRequest = UserAccountEventRequest
+                        .builder()
+                        .type(eventTypeEnum.getCode())
+                        .description(eventTypeEnum.getDescription())
+                        .deviceDetails(loginRequest.getDeviceDetails())
+                        .ipAddress(loginRequest.getIpAddress())
+                        .build();
+
+                userAccountEventService.addEvent(accountResponse.getUsername(), userAccountEventRequest);
+
+                return getLoginResponse(accountResponse);
+            }
+
             throw new LoginAuthenticationException(loginRequest, accountResponse, ex);
         }
     }
 
     @Override
-    public void requestToken(@NotNull final TokenRequest tokenRequest) {
+    public void requestToken(TokenRequest tokenRequest) {
         accountVerificationService.requestToken(tokenRequest);
     }
 
     @Override
-    public void verifyAccount(@NotNull final TokenVerifyRequest verifyAccountRequest) {
+    public void verifyAccount(TokenVerifyRequest verifyAccountRequest) {
         accountVerificationService.verifyAccount(verifyAccountRequest);
     }
 
     @Override
-    public void requestResetPasswordToken(@NotNull final TokenRequest tokenRequest) {
-        resetPasswordService.requestResetPasswordToken(tokenRequest);
+    public ResetPasswordTokenResponse requestResetPasswordToken(TokenRequest tokenRequest) {
+        return resetPasswordService.requestResetPasswordToken(tokenRequest);
     }
 
     @Override
-    public void resetPassword(@NotNull final ResetPasswordRequest resetPasswordRequest) {
+    public PasswordTokenUserResponse requestPasswordTokenUser(String token) {
+        return resetPasswordService.getPasswordTokenUser(token);
+    }
+
+    @Override
+    public void resetPassword(ResetPasswordRequest resetPasswordRequest) {
         resetPasswordService.resetPassword(resetPasswordRequest);
     }
 
-    private void checkToRequestToken(@NotNull final AccountResponse accountResponse) {
+    private void checkToRequestToken(AccountResponse accountResponse) {
         if (accountResponse.getStatus() != AccountStatusEnum.PENDING_VERIFICATION) {
             return;
         }
 
         final TokenRequest tokenRequest = TokenRequest.builder()
                 .username(accountResponse.getUsername())
-                .messagingChannel(MessagingChannel.EMAIL.getName())
+                .messagingChannel(MessagingChannelEnum.EMAIL.getCode())
                 .build();
 
         requestToken(tokenRequest);
+    }
+
+    private LoginResponse getLoginResponse(AccountResponse accountResponse) {
+        final UserResponse userResponse = userService.getUserByAccountId(accountResponse.getId())
+                .orElseThrow(InvalidCredentialsException::new);
+
+        final List<String> roles = accountResponse.getRoles().stream().toList();
+
+        final String token = jwtService.issueToken(
+                accountResponse.getUsername(),
+                accountResponse.getUsername(),
+                roles
+        );
+
+        return LoginResponse
+                .builder()
+                .user(userResponse)
+                .accessToken(token)
+                .build();
     }
 }

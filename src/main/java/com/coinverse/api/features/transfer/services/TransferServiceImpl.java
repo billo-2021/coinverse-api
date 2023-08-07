@@ -10,6 +10,7 @@ import com.coinverse.api.features.transfer.models.WithdrawRequest;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -20,7 +21,7 @@ public class TransferServiceImpl implements TransferService {
     private final TransferMapper transferMapper;
 
     @Override
-    public PaymentResponse deposit(@NotNull final DepositRequest depositRequest) {
+    public PaymentResponse deposit(DepositRequest depositRequest) {
         final UserAccount currentUser = getCurrentUser();
         final PaymentRequest paymentRequest = transferMapper.depositRequestToPaymentRequest(depositRequest);
 
@@ -28,7 +29,7 @@ public class TransferServiceImpl implements TransferService {
     }
 
     @Override
-    public PaymentResponse withdraw(@NotNull final WithdrawRequest withdrawRequest) {
+    public PaymentResponse withdraw(WithdrawRequest withdrawRequest) {
         final UserAccount currentUser = getCurrentUser();
         final PaymentRequest paymentRequest = transferMapper.withdrawRequestToPaymentRequest(withdrawRequest);
 
@@ -36,13 +37,13 @@ public class TransferServiceImpl implements TransferService {
     }
 
     @Override
-    public PageResponse<PaymentResponse> getTransactions(@NotNull final PageRequest pageRequest) {
+    public PageResponse<PaymentResponse> getTransactions(Pageable pageable) {
         final UserAccount currentUser = getCurrentUser();
-        return paymentService.getPayments(currentUser.getUsername(), pageRequest);
+        return paymentService.getPayments(currentUser.getUsername(), pageable);
     }
 
     @Override
-    public PaymentResponse getTransactionById(@NotNull final Long id) {
+    public PaymentResponse getTransactionById(Long id) {
         final UserAccount currentUser = getCurrentUser();
         return paymentService.getPaymentByUsernameAndPaymentId(currentUser.getUsername(), id);
     }

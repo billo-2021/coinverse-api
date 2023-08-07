@@ -5,9 +5,8 @@ import com.coinverse.api.common.services.MessageService;
 import com.coinverse.api.common.services.UserService;
 import com.coinverse.api.features.messaging.config.MessagingProperties;
 import com.coinverse.api.features.messaging.models.Message;
-import com.coinverse.api.features.messaging.models.MessagingChannel;
+import com.coinverse.api.features.messaging.models.MessagingChannelEnum;
 import com.coinverse.api.features.messaging.models.SimpleMessage;
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -24,9 +23,9 @@ public class MessagingServiceImpl implements MessagingService {
 
 
     @Override
-    public void sendMessage(@NotNull final Long accountId,
-                            @NotNull final Message message,
-                            @NotNull final Set<MessagingChannel> messagingChannels) {
+    public void sendMessage(Long accountId,
+                            Message message,
+                            Set<MessagingChannelEnum> messagingChannels) {
         final UserResponse userResponse = userService.getUserByAccountId(accountId).orElseThrow();
 
         messagingChannels.forEach(messagingChannel -> {
@@ -51,9 +50,9 @@ public class MessagingServiceImpl implements MessagingService {
         });
     }
 
-    private SimpleMessage getSimpleMessage(@NotNull final Message message,
-                                           @NotNull final String source,
-                                           @NotNull final String destination) {
+    private SimpleMessage getSimpleMessage(Message message,
+                                           String source,
+                                           String destination) {
         return SimpleMessage.builder()
                 .subject(message.getSubject())
                 .content(message.getContent())

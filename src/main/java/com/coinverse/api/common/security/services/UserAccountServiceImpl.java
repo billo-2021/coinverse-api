@@ -20,7 +20,7 @@ public class UserAccountServiceImpl implements UserAccountService {
 
     @Override
     public UserDetails loadUserByUsername(final @NotNull String username) throws UsernameNotFoundException {
-        return accountRepository.findByUsername(username)
+        return accountRepository.findByUsernameIgnoreCase(username)
                 .map(userAccountMapper::accountToUserAccount)
                 .orElseThrow(UserAccountNotFoundException::new);
     }

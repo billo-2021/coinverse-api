@@ -2,55 +2,67 @@ package com.coinverse.api.features.trade.services;
 
 import com.coinverse.api.common.entities.*;
 import com.coinverse.api.common.exceptions.InvalidRequestException;
-import com.coinverse.api.common.models.CryptoTransactionActionEnum;
-import com.coinverse.api.common.models.CryptoTransactionStatusEnum;
-import com.coinverse.api.common.models.PageResponse;
+import com.coinverse.api.common.exceptions.MappingException;
+import com.coinverse.api.common.exceptions.ValidationException;
+import com.coinverse.api.common.models.*;
 import com.coinverse.api.common.repositories.*;
 import com.coinverse.api.common.security.models.UserAccount;
 import com.coinverse.api.features.trade.mappers.TradeMapper;
-import com.coinverse.api.features.trade.models.CryptoTransactionResponse;
+import com.coinverse.api.features.trade.models.CurrencyTransactionResponse;
 import com.coinverse.api.features.trade.models.TradeRequest;
-import com.coinverse.api.features.trade.models.WalletResponse;
 import com.coinverse.api.features.trade.validators.TradeValidator;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.util.List;
+
+import static com.coinverse.api.common.utils.MathUtil.MATH_CONTEXT;
+import static com.coinverse.api.common.utils.MathUtil.ROUNDING_CONTEXT;
 
 @Service
 @RequiredArgsConstructor
 public class TradeServiceImpl implements TradeService {
-    private final WalletService walletService;
     private final WalletRepository walletRepository;
-    private final CryptoCurrencyExchangeRateRepository cryptoCurrencyExchangeRateRepository;
-    private final CryptoTransactionActionRepository cryptoTransactionActionRepository;
-    private final CryptoCurrencyRepository cryptoCurrencyRepository;
-    private final CryptoTransactionStatusRepository cryptoTransactionStatusRepository;
-    private final CryptoTransactionRepository cryptoTransactionRepository;
+    private final CurrencyExchangeRateRepository currencyExchangeRateRepository;
+    private final CurrencyTransactionActionRepository currencyTransactionActionRepository;
+    private final CurrencyRepository currencyRepository;
+    private final CurrencyTransactionStatusRepository currencyTransactionStatusRepository;
+    private final CurrencyTransactionRepository currencyTransactionRepository;
 
     private final TradeValidator tradeValidator;
     private final TradeMapper tradeMapper;
 
     @Transactional
     @Override
-    public CryptoTransactionResponse requestTrade(@NotNull final TradeRequest tradeRequest) {
+    public CurrencyTransactionResponse requestTrade(TradeRequest tradeRequest) {
         final UserAccount userAccount = getCurrentUser();
         final Account account = tradeValidator.validateTradeUsername(userAccount.getUsername());
-        final List<Wallet> userWallets = walletRepository.findByAccountId(account.getId());
 
         final BigDecimal tradeAmount = BigDecimal.valueOf(tradeRequest.getAmount());
-        final CryptoCurrencyExchangeRate tradeExchangeRate = cryptoCurrencyExchangeRateRepository
-                .findById(tradeRequest.getQuoteId())
-                .orElseThrow(InvalidRequestException::new);
+        final String amountCurrencyCode = tradeRequest.getAmountCurrencyCode();
+        final Long quoteId = tradeRequest.getQuoteId();
+        final String tradeActionCode = tradeRequest.getAction();
+
+
+        final Currency amountCurrency = currencyRepository.findByCodeIgnoreCase(amountCurrencyCode)
+                .orElseThrow(() ->
+                        new ValidationException("Invalid amountCurrencyCode '" + amountCurrencyCode
+                                + "'", "amountCurrencyCode")
+                );
+
+        final CurrencyExchangeRate tradeExchangeRate = currencyExchangeRateRepository
+                .findById(quoteId)
+                .orElseThrow(() ->
+                        new ValidationException("Invalid quoteId '" + quoteId + "'", "quoteId")
+                );
 
         final Integer quoteTimeToLive = tradeExchangeRate.getTimeToLive();
         final OffsetDateTime quoteExpirationDateTime = tradeExchangeRate.getCreatedAt().plusSeconds(quoteTimeToLive);
@@ -60,157 +72,145 @@ public class TradeServiceImpl implements TradeService {
             throw new InvalidRequestException("Quote has expired");
         }
 
-        final CryptoCurrencyPair tradeCurrencyPair = tradeExchangeRate.getCurrencyPair();
-        final CryptoCurrency tradeBaseCurrency = tradeCurrencyPair.getBaseCurrency();
-        final CryptoCurrency tradeQuoteCurrency = tradeCurrencyPair.getQuoteCurrency();
+        final CurrencyPair tradeCurrencyPair = tradeExchangeRate.getCurrencyPair();
+        final Currency tradeBaseCurrency = tradeCurrencyPair.getBaseCurrency();
+        final Currency tradeQuoteCurrency = tradeCurrencyPair.getQuoteCurrency();
 
-        final String amountCurrencyCode = tradeRequest.getAmountCurrencyCode();
-        final CryptoCurrency amountCurrency = cryptoCurrencyRepository.findByCode(amountCurrencyCode)
-                .orElseThrow(InvalidRequestException::new);
-
-        if (!amountCurrency.getId().equals(tradeBaseCurrency.getId()) ||
-                !amountCurrency.getId().equals(tradeQuoteCurrency.getId())) {
-           throw new InvalidRequestException("Invalid amount currency");
+        if (!amountCurrencyCode.equalsIgnoreCase(tradeBaseCurrency.getCode()) &&
+                !amountCurrencyCode.equalsIgnoreCase(tradeQuoteCurrency.getCode())) {
+            throw new ValidationException("Invalid amountCurrencyCode '" + amountCurrencyCode + "'", "amountCurrencyCode");
         }
 
-        final CryptoTransactionAction tradeAction = cryptoTransactionActionRepository.findByName(tradeRequest.getAction())
+        CurrencyTransactionActionEnum tradeActionEnum = CurrencyTransactionActionEnum.of(tradeActionCode)
+                .orElseThrow(() ->
+                        new ValidationException("Invalid action '" + tradeActionCode + "'", "action")
+                );
+
+        final boolean isBuying = tradeActionEnum == CurrencyTransactionActionEnum.BUY;
+
+        final CurrencyTransactionAction tradeAction = currencyTransactionActionRepository
+                .findByCodeIgnoreCase(tradeActionCode)
                 .orElseThrow();
-        final CryptoTransactionActionEnum tradeActionEnum = CryptoTransactionActionEnum.of(tradeAction.getName())
-                .orElseThrow();
 
-        final String createdTransactionStatusName = CryptoTransactionStatusEnum.CREATED.getName();
-        final CryptoTransactionStatus transactionStatus = cryptoTransactionStatusRepository.findByName(createdTransactionStatusName)
-                .orElseThrow(InvalidRequestException::new);
+        Wallet sourceWallet = null;
+        Wallet targetWallet = null;
 
-        final CryptoTransaction.CryptoTransactionBuilder transactionBuilder = CryptoTransaction.builder();
+        if (isBuying) {
+            sourceWallet = walletRepository.findByAccountIdAndCurrencyId(userAccount.getId(),
+                            tradeQuoteCurrency.getId())
+                    .orElseThrow(() -> new MappingException("Unable to find target user wallet for currencyCode '" +
+                            tradeQuoteCurrency.getCode() + "'"));
 
-        transactionBuilder
-                .amount(tradeAmount)
-                .amountCurrency(amountCurrency)
-                .exchangeRate(tradeExchangeRate)
-                .action(tradeAction)
-                .status(transactionStatus);
-
-        final boolean isTradeAmountInBaseCurrency = amountCurrency.getId().equals(tradeBaseCurrency.getId());
-
-        if (tradeActionEnum == CryptoTransactionActionEnum.BUY) {
-            final BigDecimal askRate = tradeExchangeRate.getAskRate();
-
-            final Wallet sourceWallet = userWallets.stream()
-                    .filter(userWallet -> {
-                        CryptoCurrency walletCurrency = userWallet.getCurrency();
-
-                        return walletCurrency.getId().equals(tradeQuoteCurrency.getId());
-                    }).findFirst().orElseThrow();
-
-            final Wallet destinationWallet = userWallets.stream()
-                    .filter(userWallet -> {
-                        CryptoCurrency walletCurrency = userWallet.getCurrency();
-
-                        return walletCurrency.getId().equals(tradeBaseCurrency.getId());
-                    }).findFirst().orElseThrow();
-
-            final BigDecimal creditAmount = isTradeAmountInBaseCurrency ? tradeAmount : tradeAmount.divide(askRate, RoundingMode.HALF_UP);
-
-            final BigDecimal debitAmount = isTradeAmountInBaseCurrency ? tradeAmount.multiply(askRate) : tradeAmount;
-
-            sourceWallet.setBalance(sourceWallet.getBalance().subtract(debitAmount));
-            destinationWallet.setBalance(destinationWallet.getBalance().add(creditAmount));
-
-            transactionBuilder
-                    .sourceWallet(sourceWallet)
-                    .destinationWallet(destinationWallet);
-
-            walletRepository.save(sourceWallet);
-            walletRepository.save(destinationWallet);
+            targetWallet = walletRepository.findByAccountIdAndCurrencyId(userAccount.getId(),
+                            tradeBaseCurrency.getId())
+                    .orElseThrow(() -> new MappingException("Unable to find target user wallet for currencyCode '" +
+                            tradeBaseCurrency.getCode() + "'"));
         } else {
-            final BigDecimal bidRate = tradeExchangeRate.getBidRate();
+            sourceWallet = walletRepository.findByAccountIdAndCurrencyId(userAccount.getId(),
+                            tradeBaseCurrency.getId())
+                    .orElseThrow(() -> new MappingException("Unable to find target user wallet for currencyCode '" +
+                            tradeBaseCurrency.getCode() + "'"));
 
-            final Wallet sourceWallet = userWallets.stream()
-                    .filter(userWallet -> {
-                        CryptoCurrency walletCurrency = userWallet.getCurrency();
-                        return walletCurrency.getId().equals(tradeBaseCurrency.getId());
-                    }).findFirst().orElseThrow();
-
-            final Wallet destinationWallet = userWallets.stream()
-                    .filter(userWallet -> {
-                        CryptoCurrency walletCurrency = userWallet.getCurrency();
-                        return walletCurrency.getId().equals(tradeQuoteCurrency.getId());
-                    }).findFirst().orElseThrow();
-
-            final BigDecimal creditAmount = isTradeAmountInBaseCurrency ? tradeAmount.divide(bidRate, RoundingMode.HALF_UP) : tradeAmount;
-
-            final BigDecimal debitAmount = isTradeAmountInBaseCurrency ? tradeAmount : tradeAmount.multiply(bidRate);
-
-            sourceWallet.setBalance(sourceWallet.getBalance().subtract(debitAmount));
-            destinationWallet.setBalance(destinationWallet.getBalance().add(creditAmount));
-
-            transactionBuilder
-                    .sourceWallet(sourceWallet)
-                    .destinationWallet(destinationWallet);
-
-            walletRepository.save(sourceWallet);
-            walletRepository.save(destinationWallet);
+            targetWallet = walletRepository.findByAccountIdAndCurrencyId(userAccount.getId(),
+                            tradeQuoteCurrency.getId())
+                    .orElseThrow(() -> new MappingException("Unable to find target user wallet for currencyCode '" +
+                            tradeQuoteCurrency.getCode() + "'"));
         }
 
-        CryptoTransaction transaction = transactionBuilder.build();
-        final CryptoTransaction createdTransaction = cryptoTransactionRepository.save(transaction);
+        final Currency sourceWalletCurrency = sourceWallet.getCurrency();
+        final Currency targetWalletCurrency = targetWallet.getCurrency();
 
-        return tradeMapper.cryptoTransactionToCryptoTransactionResponse(createdTransaction);
+        boolean isAmountSameAsBaseCurrency = amountCurrency.getId().equals(tradeBaseCurrency.getId());
+
+        boolean isAmountCurrencySameAsSourceCurrency = amountCurrency.getId().equals(sourceWalletCurrency.getId());
+        boolean isAmountCurrencySameAsTargetCurrency = amountCurrency.getId().equals(targetWalletCurrency.getId());
+
+        final BigDecimal rate = isBuying ? tradeExchangeRate.getBidRate() : tradeExchangeRate.getAskRate();
+
+        BigDecimal sameAsTradeBaseCurrencyAmount = isAmountSameAsBaseCurrency ?
+                tradeAmount.multiply(rate, MATH_CONTEXT) :
+                tradeAmount.divide(rate, MATH_CONTEXT);
+
+        final BigDecimal sourceTradeAmount = isAmountCurrencySameAsSourceCurrency ?
+                tradeAmount :
+                sameAsTradeBaseCurrencyAmount;
+
+        final BigDecimal targetTradeAmount = isAmountCurrencySameAsTargetCurrency ?
+                tradeAmount :
+                sameAsTradeBaseCurrencyAmount;
+
+        final BigDecimal sourceBalance = sourceWallet.getBalance();
+        final BigDecimal newSourceBalance = sourceBalance.subtract(sourceTradeAmount, MATH_CONTEXT);
+
+        if (newSourceBalance.compareTo(new BigDecimal("0.00000", MATH_CONTEXT)) < 0) {
+            throw new InvalidRequestException("Not enough funds in the balance");
+        }
+
+        sourceWallet.setBalance(newSourceBalance);
+
+        final BigDecimal targetBalance = targetWallet.getBalance();
+        final BigDecimal newTargetBalance =  targetBalance.add(targetTradeAmount, MATH_CONTEXT);
+
+        targetWallet.setBalance(newTargetBalance);
+
+        walletRepository.saveAndFlush(sourceWallet);
+        walletRepository.saveAndFlush(targetWallet);
+
+        final String createdTransactionStatusCode = CurrencyTransactionStatusEnum.CREATED.getCode();
+        final CurrencyTransactionStatus transactionStatus = currencyTransactionStatusRepository.findByCodeIgnoreCase(createdTransactionStatusCode)
+                .orElseThrow(() -> new MappingException("Unable to find transaction status for transactionStatus '" +
+                        createdTransactionStatusCode + "'"));
+
+        final CurrencyTransaction transaction = CurrencyTransaction
+                .builder()
+                .amount(targetTradeAmount.round(ROUNDING_CONTEXT))
+                .currency(targetWalletCurrency)
+                .action(tradeAction)
+                .account(account)
+                .sourceWallet(sourceWallet)
+                .destinationWallet(targetWallet)
+                .status(transactionStatus)
+                .build();
+
+        final CurrencyTransaction createdTransaction = currencyTransactionRepository.saveAndFlush(transaction);
+
+        return tradeMapper.currencyTransactionToCurrencyTransactionResponse(createdTransaction);
     }
 
     @Override
-    public PageResponse<CryptoTransactionResponse> getTrades(@NotNull final PageRequest pageRequest) {
+    public PageResponse<CurrencyTransactionResponse> getTrades(Pageable pageable) {
         final UserAccount userAccount = getCurrentUser();
         Account account = tradeValidator.validateTradeUsername(userAccount.getUsername());
 
-        final Page<CryptoTransaction> cryptoTransactionPage = cryptoTransactionRepository
-                .findAllByAccountId(account.getId(), pageRequest);
+        final Page<CurrencyTransaction> currencyTransactionPage = currencyTransactionRepository
+                .findAllByAccountId(account.getId(), pageable);
 
-        final Page<CryptoTransactionResponse> cryptoTransactionResponsePage = cryptoTransactionPage
-                .map(tradeMapper::cryptoTransactionToCryptoTransactionResponse);
+        final Page<CurrencyTransactionResponse> currencyTransactionResponsePage = currencyTransactionPage
+                .map(tradeMapper::currencyTransactionToCurrencyTransactionResponse);
 
-        return PageResponse.of(cryptoTransactionResponsePage);
+        return PageResponse.of(currencyTransactionResponsePage);
     }
 
     @Override
-    public CryptoTransactionResponse getTradeById(@NotNull final Long id) {
+    public CurrencyTransactionResponse getTradeById(Long id) {
         final UserAccount userAccount = getCurrentUser();
         final Account account = tradeValidator.validateTradeUsername(userAccount.getUsername());
         final Long accountId = account.getId();
 
-        final CryptoTransaction cryptoTransaction = cryptoTransactionRepository.findById(id)
-                .orElseThrow(InvalidRequestException::new);
+        final CurrencyTransaction currencyTransaction = currencyTransactionRepository.findById(id)
+                .orElseThrow(() -> new InvalidRequestException("Invalid tradeId"));
 
-        final Account transactionSourceAccount = cryptoTransaction.getDestinationWallet().getAccount();
+        final Account transactionSourceAccount = currencyTransaction.getSourceWallet().getAccount();
         final Long sourceAccountId = transactionSourceAccount.getId();
 
-        Account transactionDestinationAccount = cryptoTransaction.getDestinationWallet().getAccount();
+        Account transactionDestinationAccount = currencyTransaction.getDestinationWallet().getAccount();
         final Long destinationAccountId = transactionDestinationAccount.getId();
 
         if (!accountId.equals(sourceAccountId) || !accountId.equals(destinationAccountId)) {
             throw new InvalidRequestException();
         }
 
-        return tradeMapper.cryptoTransactionToCryptoTransactionResponse(cryptoTransaction);
-    }
-
-    @Override
-    public PageResponse<WalletResponse> getWallets(@NotNull final PageRequest pageRequest) {
-        final UserAccount userAccount = getCurrentUser();
-        return walletService.getWallets(userAccount.getUsername(), pageRequest);
-    }
-
-    @Override
-    public PageResponse<WalletResponse> getAllWallets() {
-        final UserAccount userAccount = getCurrentUser();
-        return walletService.getAllWallets(userAccount.getUsername());
-    }
-
-    @Override
-    public WalletResponse getWalletById(@NotNull final Long id) {
-        final UserAccount userAccount = getCurrentUser();
-        return walletService.getWalletById(userAccount.getUsername(), id);
+        return tradeMapper.currencyTransactionToCurrencyTransactionResponse(currencyTransaction);
     }
 
     private UserAccount getCurrentUser() {

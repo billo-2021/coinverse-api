@@ -1,7 +1,6 @@
 package com.coinverse.api.common.services;
 
 import com.coinverse.api.common.models.*;
-import jakarta.validation.constraints.NotNull;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -9,24 +8,24 @@ import java.util.Optional;
 
 @Service
 public interface AccountService {
-    Optional<AccountResponse> getAccountById(@NotNull final Long id);
-    Optional<AccountResponse> getAccountByUsername(@NotNull final String username);
-    void addAccountLoginAttemptsById(@NotNull final Long accountId);
-    AccountResponse updateAccountById(@NotNull final Long id, @NotNull final AccountUpdateRequest accountUpdateRequest);
-    AccountResponse updateAccountByUsername(@NotNull final String username, @NotNull final AccountUpdateRequest accountUpdateRequest);
-    void verifyAccount(@NotNull final Long accountId, @NotNull final Long accountTokenId);
-    void deleteAccountById(@NotNull final Long id);
-    void deleteAccountByUsername(@NotNull final String username);
-    void resetAccountLoginAttemptsById(@NotNull final Long accountId);
-    Optional<AccountTokenResponse> getAccountTokenById(@NotNull final Long id);
-    Optional<AccountTokenResponse> getAccountTokenByAccountIdAndTokenTypeName(
-            @NotNull final Long accountId, @NotNull final String tokenTypeName);
-    List<AccountTokenResponse> getAccountTokensByAccountId(@NotNull final Long id);
+    Optional<AccountResponse> getAccountById(Long id);
+    Optional<AccountResponse> getAccountByUsername(String username);
+    void addAccountLoginAttemptsById(Long accountId);
+    AccountResponse updateAccountById(Long id, AccountUpdateRequest accountUpdateRequest);
+    AccountResponse updateAccountByUsername(String username, AccountUpdateRequest accountUpdateRequest);
+    void verifyAccount(Long accountId, Long accountTokenId);
+    void deleteAccountById(Long id);
+    void deleteAccountByUsername(String username);
+    void resetAccountLoginAttemptsById(Long accountId);
+    Optional<AccountTokenResponse> getAccountTokenById(Long id);
+    Optional<AccountTokenResponse> getAccountTokenByAccountIdAndTokenTypeCode(
+            Long accountId, String tokenTypeCode);
+    List<AccountTokenResponse> getAccountTokensByAccountId(Long id);
 
-    void updateAccountTokenById(@NotNull final Long id,
-                                       @NotNull final AccountTokenUpdateRequest accountTokenUpdateRequest);
-    void addAccountTokenByAccountId(@NotNull final Long id, @NotNull final AccountTokenRequest accountTokenRequest);
-    void addAccountTokenUsageAttemptByTokenId(@NotNull final Long id);
+    void updateAccountTokenById(Long id,
+                                       AccountTokenUpdateRequest accountTokenUpdateRequest);
+    void addAccountTokenByAccountId(Long id, AccountTokenRequest accountTokenRequest);
+    void addAccountTokenUsageAttemptByTokenId(Long id);
 
-    void deleteAccountTokenByAccountIdAndTokenTypeName(@NotNull final Long accountId, final @NotNull String tokenTypeName);
+    void deleteAccountTokenByAccountIdAndTokenTypeName(Long accountId, String tokenTypeName);
 }

@@ -9,12 +9,12 @@ import java.util.List;
 import java.util.Optional;
 
 public interface UserService {
-    Optional<UserResponse> getUserById(@NotNull final Long id);
-    Optional<UserResponse> getUserByEmailAddress(@NotNull final String emailAddress);
-    Optional<UserResponse> getUserByAccountId(@NotNull final Long accountId);
+    Optional<UserResponse> getUserById(Long id);
+    Optional<UserResponse> getUserByEmailAddress(String emailAddress);
+    Optional<UserResponse> getUserByAccountId(Long accountId);
     List<UserResponse> getUsers();
-    UserResponse addUser(@NotNull final UserRequest userRequest);
-    UserResponse updateUser(@NotNull final Long id, @NotNull final UserRequest userRequest);
-    void updateUserByEmailAddress(@NotNull final String emailAddress, @NotNull UserUpdateRequest userUpdateRequest);
-    void deleteUser(@NotNull final Long id);
+    UserResponse addUser(UserRequest userRequest);
+    UserResponse updateUser(Long id, UserRequest userRequest);
+    void updateUserByEmailAddress(String emailAddress, UserUpdateRequest userUpdateRequest);
+    void deleteUser(Long id);
 }

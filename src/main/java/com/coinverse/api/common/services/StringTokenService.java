@@ -3,7 +3,6 @@ package com.coinverse.api.common.services;
 import com.coinverse.api.common.exceptions.TokenExpiredException;
 import com.coinverse.api.common.exceptions.TokenInvalidException;
 import com.coinverse.api.common.models.StringToken;
-import jakarta.validation.constraints.NotNull;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -12,7 +11,7 @@ public class StringTokenService {
         return generator.generate();
     }
 
-    public void validateToken(@NotNull final StringToken token, @NotNull final String otherToken) {
+    public void validateToken(StringToken token, String otherToken) {
         if (token.hasExpired()) {
             throw new TokenExpiredException("Token has expired");
         }

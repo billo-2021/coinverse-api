@@ -29,25 +29,25 @@ public class AccountServiceImpl implements AccountService {
     private final AccountStatusNameValidator accountStatusNameValidator;
     private final AccountUsernameRequestValidator accountUsernameRequestValidator;
 
-    private final AccountTokenTypeNameRequestValidator accountTokenTypeNameRequestValidator;
+    private final AccountTokenTypeCodeRequestValidator accountTokenTypeCodeRequestValidator;
     private final AccountTokenIdRequestValidator accountTokenIdRequestValidator;
     private final AccountTokenRequestValidator accountTokenRequestValidator;
 
     private final AccountMapper accountMapper;
 
     @Override
-    public Optional<AccountResponse> getAccountById(@NotNull final Long id) {
+    public Optional<AccountResponse> getAccountById(Long id) {
         return accountRepository.findById(id).map(accountMapper::accountToAccountResponse);
     }
 
     @Override
-    public Optional<AccountResponse> getAccountByUsername(@NotNull final String username) {
-        return accountRepository.findByUsername(username).map(accountMapper::accountToAccountResponse);
+    public Optional<AccountResponse> getAccountByUsername(String username) {
+        return accountRepository.findByUsernameIgnoreCase(username).map(accountMapper::accountToAccountResponse);
     }
 
     @Transactional
     @Override
-    public void addAccountLoginAttemptsById(@NotNull final Long accountId) {
+    public void addAccountLoginAttemptsById(Long accountId) {
         final Account account = accountIdRequestValidator.validate(accountId);
         account.setLoginAttempts(account.getLoginAttempts() + 1);
         account.setLastLoginAt(OffsetDateTime.now(ZoneOffset.UTC));
@@ -55,18 +55,18 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public AccountResponse updateAccountById(@NotNull final Long id, @NotNull final AccountUpdateRequest accountUpdateRequest) {
+    public AccountResponse updateAccountById(Long id, final AccountUpdateRequest accountUpdateRequest) {
         return null;
     }
 
     @Override
-    public AccountResponse updateAccountByUsername(@NotNull final String username, @NotNull final AccountUpdateRequest accountUpdateRequest) {
+    public AccountResponse updateAccountByUsername(String username, final AccountUpdateRequest accountUpdateRequest) {
         return null;
     }
 
     @Transactional
     @Override
-    public void verifyAccount(@NotNull final Long accountId, @NotNull final Long accountTokeId) {
+    public void verifyAccount(Long accountId, Long accountTokeId) {
         final String verifiedAccountStatusName = AccountStatusEnum.VERIFIED.getName();
 
         final AccountStatus accountStatus = accountStatusNameValidator.validate(verifiedAccountStatusName);
@@ -79,27 +79,27 @@ public class AccountServiceImpl implements AccountService {
         account.setLastLoginAt(OffsetDateTime.now(ZoneOffset.UTC));
         account.setLoginAttempts(0);
 
-        accountRepository.save(account);
+        accountRepository.saveAndFlush(account);
         accountTokenRepository.delete(accountToken);
     }
 
     @Transactional
     @Override
-    public void deleteAccountById(@NotNull final Long id) {
+    public void deleteAccountById(Long id) {
         final Account account = accountIdRequestValidator.validate(id);
         accountRepository.delete(account);
     }
 
     @Transactional
     @Override
-    public void deleteAccountByUsername(@NotNull final String username) {
+    public void deleteAccountByUsername(String username) {
         final Account account = accountUsernameRequestValidator.validate(username);
         accountRepository.delete(account);
     }
 
     @Transactional
     @Override
-    public void resetAccountLoginAttemptsById(@NotNull final Long accountId) {
+    public void resetAccountLoginAttemptsById(Long accountId) {
         final Account account = accountIdRequestValidator.validate(accountId);
 
         account.setLastLoginAt(OffsetDateTime.now(ZoneOffset.UTC));
@@ -108,15 +108,15 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public Optional<AccountTokenResponse> getAccountTokenById(@NotNull final Long id) {
+    public Optional<AccountTokenResponse> getAccountTokenById(Long id) {
         return Optional.empty();
     }
 
     @Override
-    public Optional<AccountTokenResponse> getAccountTokenByAccountIdAndTokenTypeName(
+    public Optional<AccountTokenResponse> getAccountTokenByAccountIdAndTokenTypeCode(
             @NotNull final Long accountId,
-            @NotNull final String tokenTypeName) {
-        final AccountTokenType accountTokenType = accountTokenTypeNameRequestValidator.validate(tokenTypeName);
+            @NotNull final String tokenTypeCode) {
+        final AccountTokenType accountTokenType = accountTokenTypeCodeRequestValidator.validate(tokenTypeCode);
 
         final Long tokenTypeId = accountTokenType.getId();
 
@@ -136,14 +136,14 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public List<AccountTokenResponse> getAccountTokensByAccountId(@NotNull final Long id) {
+    public List<AccountTokenResponse> getAccountTokensByAccountId(Long id) {
         return null;
     }
 
     @Transactional
     @Override
-    public void updateAccountTokenById(@NotNull final Long id,
-                                              @NotNull final AccountTokenUpdateRequest accountTokenUpdateRequest) {
+    public void updateAccountTokenById(Long id,
+                                              AccountTokenUpdateRequest accountTokenUpdateRequest) {
         final AccountToken accountToken = accountTokenIdRequestValidator.validate(id);
 
         accountToken.setKey(accountTokenUpdateRequest.getKey());
@@ -153,7 +153,7 @@ public class AccountServiceImpl implements AccountService {
 
     @Transactional
     @Override
-    public void addAccountTokenByAccountId(@NotNull final Long id, @NotNull final AccountTokenRequest accountTokenRequest) {
+    public void addAccountTokenByAccountId(Long id, AccountTokenRequest accountTokenRequest) {
         final Account account = accountIdRequestValidator.validate(id);
         final AccountToken accountToken = accountTokenRequestValidator.validate(accountTokenRequest);
         accountToken.setAccount(account);
@@ -176,7 +176,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public void addAccountTokenUsageAttemptByTokenId(@NotNull final Long id) {
+    public void addAccountTokenUsageAttemptByTokenId(Long id) {
         AccountToken accountToken = accountTokenIdRequestValidator.validate(id);
         accountToken.setNumberOfUsageAttempts(accountToken.getNumberOfUsageAttempts() + 1);
         accountToken.setLastUsageAttemptAt(OffsetDateTime.now(ZoneOffset.UTC));
@@ -185,8 +185,8 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public void deleteAccountTokenByAccountIdAndTokenTypeName(@NotNull final Long accountId,
-                                                                          @NotNull final String tokenTypeName) {
+    public void deleteAccountTokenByAccountIdAndTokenTypeName(Long accountId,
+                                                                          String tokenTypeName) {
 
     }
 }

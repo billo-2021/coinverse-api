@@ -12,9 +12,8 @@ import com.coinverse.api.features.authentication.models.GeneratedTokenMessage;
 import com.coinverse.api.features.authentication.models.TokenRequest;
 import com.coinverse.api.features.authentication.models.TokenVerifyRequest;
 import com.coinverse.api.features.messaging.models.Message;
-import com.coinverse.api.features.messaging.models.MessagingChannel;
+import com.coinverse.api.features.messaging.models.MessagingChannelEnum;
 import com.coinverse.api.features.messaging.services.MessagingService;
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,13 +30,13 @@ public class AccountTokenService {
     private final MessagingService messagingService;
     private final AccountService accountService;
 
-    public void requestToken(@NotNull final Long accountId,
-                             @NotNull final String tokenTypeName,
-                             @NotNull final TokenRequest tokenRequest,
-                             @NotNull final StringTokenGenerator stringTokenGenerator,
-                             @NotNull final GeneratedTokenMessage generatedTokenMessage) {
+    public void requestToken(Long accountId,
+                             String tokenTypeName,
+                             TokenRequest tokenRequest,
+                             StringTokenGenerator stringTokenGenerator,
+                             GeneratedTokenMessage generatedTokenMessage) {
 
-        final StringToken token = accountService.getAccountTokenByAccountIdAndTokenTypeName(accountId,
+        final StringToken token = accountService.getAccountTokenByAccountIdAndTokenTypeCode(accountId,
                         tokenTypeName)
                 .map((accountTokenResponse) -> generateTokenFromExistingToken(accountTokenResponse, stringTokenGenerator))
                 .orElseGet(() -> stringTokenService.generate(stringTokenGenerator));
@@ -55,23 +54,23 @@ public class AccountTokenService {
 
         final Message message = generatedTokenMessage.getMessage(token);
 
-        final MessagingChannel messagingChannel = MessagingChannel
+        final MessagingChannelEnum messagingChannelEnum = MessagingChannelEnum
                 .of(tokenRequest.getMessagingChannel())
                 .orElseThrow(() ->
                         new ValidationException("Invalid messaging channel '" + tokenRequest.getMessagingChannel() + "'", "messagingChannel")
                 );
 
-        final Set<MessagingChannel> messagingChannels = Set.of(messagingChannel);
+        final Set<MessagingChannelEnum> messagingChannelEnums = Set.of(messagingChannelEnum);
 
-        messagingService.sendMessage(accountId, message, messagingChannels);
+        messagingService.sendMessage(accountId, message, messagingChannelEnums);
     }
 
-    public AccountTokenResponse verifyToken(@NotNull final Long accountId,
-                                            @NotNull final String tokenTypeName,
-                                            @NotNull final TokenVerifyRequest verifyTokenRequest) {
+    public AccountTokenResponse verifyToken(Long accountId,
+                                            String tokenTypeCode,
+                                            TokenVerifyRequest verifyTokenRequest) {
 
         final AccountTokenResponse accountTokenResponse = accountService
-                .getAccountTokenByAccountIdAndTokenTypeName(accountId, tokenTypeName)
+                .getAccountTokenByAccountIdAndTokenTypeCode(accountId, tokenTypeCode)
                 .orElseThrow(InvalidRequestException::new);
 
         final Long accountVerificationId = accountTokenResponse.getId();
@@ -90,8 +89,8 @@ public class AccountTokenService {
         return accountTokenResponse;
     }
 
-    private StringToken generateTokenFromExistingToken(@NotNull final AccountTokenResponse accountTokenResponse,
-                                                       @NotNull final StringTokenGenerator stringTokenGenerator) {
+    private StringToken generateTokenFromExistingToken(AccountTokenResponse accountTokenResponse,
+                                                       StringTokenGenerator stringTokenGenerator) {
         final StringToken token = new StringToken(accountTokenResponse.getKey(),
                 accountTokenResponse.getExpiresAt());
 

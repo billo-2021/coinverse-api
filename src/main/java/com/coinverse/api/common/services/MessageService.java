@@ -10,8 +10,8 @@ import java.util.Optional;
 
 @Service
 public interface MessageService {
-    Optional<MessageResponse> getMessageById(final @NotNull Long id);
-    List<MessageResponse> getMessageByAccountId(final @NotNull Long accountId);
-    void addMessage(final @NotNull Long accountId, final @NotNull MessageRequest messageRequest);
-    void deleteMessage(final @NotNull Long id);
+    Optional<MessageResponse> getMessageById(Long id);
+    List<MessageResponse> getMessageByAccountId(Long accountId);
+    void addMessage(Long accountId, MessageRequest messageRequest);
+    void deleteMessage(Long id);
 }
