@@ -28,7 +28,4 @@ public class AddressUpdateRequest {
 
     @NotBlank(message = "postalCode is required")
     private String postalCode;
-
-    private String deviceDetails;
-    private String ipAddress;
 }
