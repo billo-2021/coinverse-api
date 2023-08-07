@@ -10,15 +10,34 @@ spring:
   jackson:
     time-zone: UTC
   jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
     hibernate:
       ddl-auto: create-drop
-    show-sql: true
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
         jdbc:
           time_zone: UTC
-        format_sql: true
+  sql:
+    init:
+      mode: never
+      continue-on-error: false
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: billomailbox@gmail.com
+    password: ncws agbp ruew gyyc
+    properties:
+      mail:
+        debug: true
+        transport:
+          protocol: smtp
+        smtp:
+          auth: true
+          starttls:
+            enable: true
 logging:
   level:
     root: info
@@ -38,5 +57,9 @@ security:
   jwt:
     secret-key: secret
   messaging:
-    email-source: no-reply@coinverse.com
+    email-source: billomailbox@gmail.com
     sms-source: 0733001026
+transfer:
+  properties:
+    system-username: system@coinverse.com
+    system-password: 123
