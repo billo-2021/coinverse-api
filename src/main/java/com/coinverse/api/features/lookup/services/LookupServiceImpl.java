@@ -71,6 +71,11 @@ public class LookupServiceImpl implements LookupService {
     }
 
     @Override
+    public PageResponse<CryptoCurrencyResponse> findAllCryptoCurrencies(String query, Pageable pageable) {
+        return cryptoCurrencyService.findAll(query, pageable);
+    }
+
+    @Override
     public CryptoCurrencyResponse findCryptoCurrencyByCurrencyCode(String code) {
         return cryptoCurrencyService.findByCurrencyCode(code);
     }
