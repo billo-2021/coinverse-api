@@ -5,7 +5,7 @@ import com.coinverse.api.common.security.exceptions.*;
 import com.coinverse.api.common.security.models.RolePrincipal;
 import com.coinverse.api.common.security.models.UserAccount;
 import com.coinverse.api.common.security.utils.AuthenticationUtils;
-import com.coinverse.api.features.authentication.services.JwtService;
+import com.coinverse.api.common.security.services.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
