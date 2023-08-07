@@ -1,14 +1,14 @@
 package com.coinverse.api.features.balance.controllers;
 
+import com.coinverse.api.common.constants.PageConstants;
 import com.coinverse.api.common.models.PageResponse;
+import com.coinverse.api.common.validators.PageRequestValidator;
 import com.coinverse.api.features.balance.models.WalletResponse;
 import com.coinverse.api.features.balance.services.BalanceService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping(BalanceController.PATH)
@@ -19,13 +19,23 @@ public class BalanceController {
     private final BalanceService balanceService;
 
     @GetMapping
-    public ResponseEntity<PageResponse<WalletResponse>> getBalances() {
-        final PageResponse<WalletResponse> balancePage = balanceService.getBalances();
-        return ResponseEntity.ok(balancePage);
+    public PageResponse<WalletResponse> getBalances(@RequestParam(value = "pageNumber", defaultValue = PageConstants.DEFAULT_PAGE, required = false) int pageNumber,
+                                                    @RequestParam(value = "pageSize", defaultValue = PageConstants.DEFAULT_SIZE, required = false) int pageSize,
+                                                    @RequestParam(value = "sortBy", defaultValue = "balance", required = false) String sortBy,
+                                                    @RequestParam(value = "sortDirection", defaultValue = "desc", required = false) String sortDirection) {
+        final Pageable pageable = PageRequestValidator.validate(pageNumber, pageSize, sortBy, sortDirection);
+
+        return balanceService.getBalances(pageable);
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<PageResponse<WalletResponse>> getAllBalances() {
+        final PageResponse<WalletResponse> walletPageResponse = balanceService.getAllBalances();
+        return ResponseEntity.ok(walletPageResponse);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<WalletResponse> getBalanceByWalletId(@PathVariable("id") Long id) {
+    public ResponseEntity<WalletResponse> getBalancesByWalletId(@PathVariable Long id) {
         final WalletResponse walletResponse = balanceService.getBalancesByWalletId(id);
 
         return ResponseEntity.ok(walletResponse);

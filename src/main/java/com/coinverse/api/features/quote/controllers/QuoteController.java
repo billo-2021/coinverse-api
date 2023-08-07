@@ -1,78 +1,67 @@
 package com.coinverse.api.features.quote.controllers;
 
+import com.coinverse.api.common.constants.PageConstants;
 import com.coinverse.api.common.models.PageResponse;
 import com.coinverse.api.common.validators.PageRequestValidator;
-import com.coinverse.api.features.quote.models.CryptoCurrencyExchangeRateResponse;
-import com.coinverse.api.features.quote.models.CurrencyExchangeRateResponse;
+import com.coinverse.api.features.quote.models.CurrencyPairExchangeRatePageResponse;
 import com.coinverse.api.features.quote.services.QuoteService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.http.ResponseEntity;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping(QuoteController.PATH)
 @RequiredArgsConstructor
 public class QuoteController {
     public static final String PATH = "/api/v1/quotes";
-
     private final QuoteService quoteService;
 
-    private final PageRequestValidator pageRequestValidator;
+    @GetMapping
+    public PageResponse<CurrencyPairExchangeRatePageResponse> getCurrencyQuotes(
+            @RequestParam(value = "pageNumber", defaultValue = PageConstants.DEFAULT_PAGE, required = false) int pageNumber,
+            @RequestParam(value = "pageSize", defaultValue = PageConstants.DEFAULT_SIZE, required = false) int pageSize,
+            @RequestParam(value = "sortBy", defaultValue = PageConstants.DEFAULT_SORT_BY, required = false) String sortBy,
+            @RequestParam(value = "sortDirection", defaultValue = PageConstants.DEFAULT_SORT_DIRECTION, required = false) String sortDirection) {
 
-    @GetMapping("/crypto-currencies")
-    public ResponseEntity<List<PageResponse<CryptoCurrencyExchangeRateResponse>>> getCryptoCurrencyQuotes(
-            @RequestParam(required = false) Integer pageNumber,
-            @RequestParam(required = false) Integer pageSize) {
+        final Pageable pageable = PageRequestValidator.validate(pageNumber, pageSize, sortBy, sortDirection);
 
-        final PageRequest pageRequest = pageRequestValidator.validatePageRequest(pageNumber, pageSize);
-
-        final List<PageResponse<CryptoCurrencyExchangeRateResponse>> currenciesExchangeRateResponsePage =
-                quoteService.getCryptoCurrencyQuotes(pageRequest);
-
-        return ResponseEntity.ok(currenciesExchangeRateResponsePage);
+        return quoteService.getCurrencyQuotes(pageable);
     }
 
-    @GetMapping("/crypto-currencies/{currencyPairName}")
-    public ResponseEntity<PageResponse<CryptoCurrencyExchangeRateResponse>> getCryptoCurrencyQuotesByCurrencyPairName(
-            @PathVariable String currencyPairName,
-            @RequestParam(required = false) Integer pageNumber,
-            @RequestParam(required = false) Integer pageSize) {
+    @GetMapping("/currency-pair")
 
-        final PageRequest pageRequest = pageRequestValidator.validatePageRequest(pageNumber, pageSize);
+    public CurrencyPairExchangeRatePageResponse getCurrencyQuotesByCurrencyPairName(
+            @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "pageNumber", defaultValue = PageConstants.DEFAULT_PAGE, required = false) int pageNumber,
+            @RequestParam(value = "pageSize", defaultValue = PageConstants.DEFAULT_SIZE, required = false) int pageSize,
+            @RequestParam(value = "sortBy", defaultValue = PageConstants.DEFAULT_SORT_BY, required = false) String sortBy,
+            @RequestParam(value = "sortDirection", defaultValue = PageConstants.DEFAULT_SORT_DIRECTION, required = false) String sortDirection
+    ) {
+        final Pageable pageable = PageRequestValidator.validate(pageNumber, pageSize, sortBy, sortDirection);
 
-        final PageResponse<CryptoCurrencyExchangeRateResponse> currencyExchangeRateResponsePage =
-                quoteService.getCryptoCurrencyQuotesByCurrencyPairName(currencyPairName,pageRequest);
+        return quoteService.getCurrencyQuotesByCurrencyPairName(name, pageable);
+    }
+    @GetMapping("/crypto")
+    public PageResponse<CurrencyPairExchangeRatePageResponse> getCryptoCurrencyQuotes(
+            @RequestParam(value = "pageNumber", defaultValue = PageConstants.DEFAULT_PAGE, required = false) int pageNumber,
+            @RequestParam(value = "pageSize", defaultValue = PageConstants.DEFAULT_SIZE, required = false) int pageSize,
+            @RequestParam(value = "sortBy", defaultValue = PageConstants.DEFAULT_SORT_BY, required = false) String sortBy,
+            @RequestParam(value = "sortDirection", defaultValue = PageConstants.DEFAULT_SORT_DIRECTION, required = false) String sortDirection) {
 
-        return ResponseEntity.ok(currencyExchangeRateResponsePage);
+        final Pageable pageable = PageRequestValidator.validate(pageNumber, pageSize, sortBy, sortDirection);
+
+        return quoteService.getCryptoCurrencyQuotes(pageable);
     }
 
-    @GetMapping("/currencies")
-    public ResponseEntity<List<PageResponse<CurrencyExchangeRateResponse>>> getCurrencyQuotes(
-            @RequestParam(required = false) Integer pageNumber,
-            @RequestParam(required = false) Integer pageSize) {
+    @GetMapping("/forex")
+    public PageResponse<CurrencyPairExchangeRatePageResponse> getForexCurrencyQuotes(
+            @RequestParam(value = "pageNumber", defaultValue = PageConstants.DEFAULT_PAGE, required = false) int pageNumber,
+            @RequestParam(value = "pageSize", defaultValue = PageConstants.DEFAULT_SIZE, required = false) int pageSize,
+            @RequestParam(value = "sortBy", defaultValue = PageConstants.DEFAULT_SORT_BY, required = false) String sortBy,
+            @RequestParam(value = "sortDirection", defaultValue = PageConstants.DEFAULT_SORT_DIRECTION, required = false) String sortDirection) {
 
-        final PageRequest pageRequest = pageRequestValidator.validatePageRequest(pageNumber, pageSize);
+        final Pageable pageable = PageRequestValidator.validate(pageNumber, pageSize, sortBy, sortDirection);
 
-        final List<PageResponse<CurrencyExchangeRateResponse>> currenciesExchangeRateResponsePage =
-                quoteService.getCurrencyQuotes(pageRequest);
-
-        return ResponseEntity.ok(currenciesExchangeRateResponsePage);
-    }
-
-    @GetMapping("/currencies/{currencyPairName}")
-    public ResponseEntity<PageResponse<CurrencyExchangeRateResponse>> getCurrencyQuoteByCurrencyPairName(
-            @PathVariable String currencyPairName,
-            @RequestParam(required = false) Integer pageNumber,
-            @RequestParam(required = false) Integer pageSize) {
-
-        final PageRequest pageRequest = pageRequestValidator.validatePageRequest(pageNumber, pageSize);
-
-        final PageResponse<CurrencyExchangeRateResponse> currencyExchangeRateResponsePage =
-                quoteService.getCurrencyQuotesByCurrencyPairName(currencyPairName,pageRequest);
-
-        return ResponseEntity.ok(currencyExchangeRateResponsePage);
+        return quoteService.getForexCurrencyQuotes(pageable);
     }
 }

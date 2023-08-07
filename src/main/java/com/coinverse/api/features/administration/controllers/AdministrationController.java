@@ -1,10 +1,19 @@
 package com.coinverse.api.features.administration.controllers;
 
+import com.coinverse.api.common.constants.PageConstants;
+import com.coinverse.api.common.models.ApiMessageResponse;
 import com.coinverse.api.common.models.PageResponse;
+import com.coinverse.api.common.models.UserRequest;
+import com.coinverse.api.common.validators.PageRequestValidator;
+import com.coinverse.api.features.administration.models.CryptoCurrencyRequest;
+import com.coinverse.api.features.administration.models.CryptoCurrencyResponse;
+import com.coinverse.api.features.administration.models.CryptoCurrencyUpdateRequest;
 import com.coinverse.api.features.administration.models.UserResponse;
 import com.coinverse.api.features.administration.services.AdministrationService;
-import com.coinverse.api.common.validators.PageRequestValidator;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,28 +24,48 @@ public class AdministrationController {
     public static final String PATH = "/api/v1/administration";
 
     private final AdministrationService administrationService;
-    private final PageRequestValidator pageRequestValidator;
 
     @GetMapping("/users")
-    ResponseEntity<PageResponse<UserResponse>> getUsers(@RequestParam(required = false) Integer pageNumber,
-                                                        @RequestParam(required = false) Integer pageSize) {
-        PageResponse<UserResponse> usersPageResponse = administrationService
-                .getUsers(pageRequestValidator.validatePageRequest(pageNumber, pageSize));
+    PageResponse<UserResponse> getUsers(@RequestParam(value = "pageNumber", defaultValue = PageConstants.DEFAULT_PAGE, required = false) int pageNumber,
+                                                        @RequestParam(value = "pageSize", defaultValue = PageConstants.DEFAULT_SIZE, required = false) int pageSize,
+                                                        @RequestParam(value = "sortBy", defaultValue = PageConstants.DEFAULT_SORT_BY, required = false) String sortBy,
+                                                        @RequestParam(value = "sortDirection", defaultValue = PageConstants.DEFAULT_SORT_DIRECTION, required = false) String sortDirection) {
+        final Pageable pageable = PageRequestValidator.validate(pageNumber, pageSize, sortBy, sortDirection);
+        return administrationService.getUsers(pageable);
+    }
 
-        return ResponseEntity.ok(usersPageResponse);
+    @PostMapping("/users")
+    ResponseEntity<ApiMessageResponse> addUser(@Valid @RequestBody UserRequest userRequest) {
+        administrationService.addUser(userRequest);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(new ApiMessageResponse("User added"));
     }
 
     @PatchMapping("/users/{username}/disable-account")
-    public ResponseEntity<String> disableUserAccount(@PathVariable String username) {
+    public ApiMessageResponse disableUserAccount(@PathVariable String username) {
         administrationService.disableUserAccount(username);
-
-        return ResponseEntity.ok("Account account disabled successfully");
+        return new ApiMessageResponse("Account account disabled successfully");
     }
 
     @PatchMapping("/users/{username}/enable-account")
-    public ResponseEntity<String> enableUserAccount(@PathVariable String username) {
+    public ApiMessageResponse enableUserAccount(@PathVariable String username) {
         administrationService.enableUserAccount(username);
+        return new ApiMessageResponse("Account account enabled successfully");
+    }
 
-        return ResponseEntity.ok("Account account enabled successfully");
+    @PostMapping("/crypto")
+    public ResponseEntity<CryptoCurrencyResponse> addNewCryptoCurrency(@Valid @RequestBody
+                                                                           final CryptoCurrencyRequest cryptoCurrencyRequest) {
+        final CryptoCurrencyResponse cryptoCurrency = administrationService.addCryptoCurrency(cryptoCurrencyRequest);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(cryptoCurrency);
+    }
+
+    @PatchMapping("/crypto/{currencyCode}")
+    public ResponseEntity<CryptoCurrencyResponse> updateCryptoCurrency(@PathVariable String currencyCode,
+                                                                       @Valid @RequestBody
+                                                                           final CryptoCurrencyUpdateRequest cryptoCurrencyUpdateRequest) {
+        final CryptoCurrencyResponse cryptoCurrency = administrationService.updateCryptoCurrency(currencyCode, cryptoCurrencyUpdateRequest);
+        return ResponseEntity.ok(cryptoCurrency);
     }
 }

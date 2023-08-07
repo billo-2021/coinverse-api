@@ -1,5 +1,6 @@
 package com.coinverse.api.features.transfer.controllers;
 
+import com.coinverse.api.common.constants.PageConstants;
 import com.coinverse.api.common.models.PageResponse;
 import com.coinverse.api.common.validators.PageRequestValidator;
 import com.coinverse.api.features.transfer.models.DepositRequest;
@@ -8,7 +9,7 @@ import com.coinverse.api.features.transfer.models.WithdrawRequest;
 import com.coinverse.api.features.transfer.services.TransferService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,12 +18,10 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class TransferController {
     public static final String PATH = "/api/v1/transfers";
-
     private final TransferService transferService;
-    private final PageRequestValidator pageRequestValidator;
 
     @PostMapping("/deposit")
-    public ResponseEntity<?> deposit(@Valid @RequestBody DepositRequest depositRequest) {
+    public ResponseEntity<PaymentResponse> deposit(@Valid @RequestBody DepositRequest depositRequest) {
         final PaymentResponse paymentResponse = transferService.deposit(depositRequest);
         return ResponseEntity.ok(paymentResponse);
     }
@@ -34,17 +33,16 @@ public class TransferController {
     }
 
     @GetMapping("/transactions")
-    public ResponseEntity<PageResponse<PaymentResponse>> getTransactions(@RequestParam(required = false) Integer pageNumber,
-                                             @RequestParam(required = false) Integer pageSize) {
-        final PageRequest pageRequest = pageRequestValidator.validatePageRequest(pageNumber, pageSize);
-        final PageResponse<PaymentResponse> paymentPageResponse = transferService.getTransactions(pageRequest);
-
-        return ResponseEntity.ok(paymentPageResponse);
+    public PageResponse<PaymentResponse> getTransactions(@RequestParam(value = "pageNumber", defaultValue = PageConstants.DEFAULT_PAGE, required = false) int pageNumber,
+                                                                         @RequestParam(value = "pageSize", defaultValue = PageConstants.DEFAULT_SIZE, required = false) int pageSize,
+                                                                         @RequestParam(value = "sortBy", defaultValue = PageConstants.DEFAULT_SORT_BY, required = false) String sortBy,
+                                                                         @RequestParam(value = "sortDirection", defaultValue = PageConstants.DEFAULT_SORT_DIRECTION, required = false) String sortDirection) {
+        final Pageable pageable = PageRequestValidator.validate(pageNumber, pageSize, sortBy, sortDirection);
+        return transferService.getTransactions(pageable);
     }
 
     @GetMapping("/transactions/{id}")
-    public ResponseEntity<PaymentResponse> getTransactionById(@PathVariable Long id) {
-        final PaymentResponse paymentResponse = transferService.getTransactionById(id);
-        return ResponseEntity.ok(paymentResponse);
+    public PaymentResponse getTransactionById(@PathVariable Long id) {
+        return transferService.getTransactionById(id);
     }
 }
