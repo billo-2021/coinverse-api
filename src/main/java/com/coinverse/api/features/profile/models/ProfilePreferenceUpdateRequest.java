@@ -18,7 +18,4 @@ import java.util.Set;
 public class ProfilePreferenceUpdateRequest {
     private String currencyCode;
     private Set<String> notificationMethods;
-
-    private String deviceDetails;
-    private String ipAddress;
 }
