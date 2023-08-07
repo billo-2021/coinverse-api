@@ -1,24 +1,27 @@
 package com.coinverse.api.common.models;
 
-import jakarta.validation.constraints.NotNull;
-
 import java.util.Optional;
 import java.util.stream.Stream;
 
 public enum RoleEnum {
-    SYSTEM("system"),
-    ADMIN("admin"),
-    CUSTOMER("user");
+    SYSTEM("system", "System"),
+    ADMIN("admin", "Admin"),
+    CUSTOMER("customer", "Customer");
     private final String authority;
-    private RoleEnum(final @NotNull String authority) {
+    private final String name;
+
+    private RoleEnum(String authority, String name) {
         this.authority = authority;
+        this.name = name;
     }
 
     public String getAuthority() {
         return authority;
     }
 
-    public static Optional<RoleEnum> of(final @NotNull String authority) {
+    public String getName() { return name; }
+
+    public static Optional<RoleEnum> of(String authority) {
         return Stream.of(values())
                 .filter(roleEnum ->
                         roleEnum.getAuthority().equalsIgnoreCase(authority)

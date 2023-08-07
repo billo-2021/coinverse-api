@@ -1,19 +1,20 @@
 package com.coinverse.api.common.models;
 
-import jakarta.validation.constraints.NotNull;
-
 public enum MessageStatusEnum {
-    CREATED("created"),
-    READ("read"),
-    DELETED("deleted");
+    CREATED("created", "Created"),
+    READ("read", "Read"),
+    DELETED("deleted", "Read");
 
-    private final String status;
+    private final String code;
+    private final String name;
 
-    private MessageStatusEnum(final @NotNull String status) {
-        this.status = status;
+    private MessageStatusEnum(String code, String name) {
+        this.code = code;
+        this.name = name;
     }
 
-    public String getStatus() {
-        return status;
+    public String getCode() { return code; }
+    public String getName() {
+        return name;
     }
 }

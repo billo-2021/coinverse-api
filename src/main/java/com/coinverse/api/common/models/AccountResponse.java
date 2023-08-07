@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Set;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
@@ -18,6 +20,8 @@ public class AccountResponse {
     private String password;
     @JsonIgnore
     private AccountStatusEnum status;
+    private Boolean isVerified;
     @JsonIgnore
     private Boolean isEnabled;
+    private Set<String> roles;
 }

@@ -20,6 +20,4 @@ public class UserResponse {
     private String lastName;
     private String phoneNumber;
     private AccountResponse account;
-    @JsonIgnore
-    private Set<String> roles;
 }

@@ -6,22 +6,27 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 public enum PaymentActionEnum {
-    DEPOSIT("deposit"),
-    WITHDRAW("withdraw");
+    DEPOSIT("deposit", "Deposit"),
+    WITHDRAW("withdraw", "Withdraw");
+
+    private final String code;
     private final String name;
 
-    private PaymentActionEnum(final @NotNull String name) {
+    private PaymentActionEnum(String code, String name) {
+        this.code = code;
         this.name = name;
     }
+
+    public String getCode() { return code; }
 
     public String getName() {
         return name;
     }
 
-    public static Optional<PaymentActionEnum> of(final @NotNull String name) {
+    public static Optional<PaymentActionEnum> of(final @NotNull String code) {
         return Stream.of(values())
                 .filter(paymentActionEnum ->
-                        paymentActionEnum.getName().equalsIgnoreCase(name))
+                        paymentActionEnum.getCode().equalsIgnoreCase(code))
                 .findFirst();
     }
 }

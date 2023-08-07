@@ -1,31 +1,33 @@
 package com.coinverse.api.common.models;
 
-import jakarta.validation.constraints.NotNull;
-
 import java.util.Optional;
 import java.util.stream.Stream;
 
 public enum AccountStatusEnum {
-    PENDING_VERIFICATION("pending_verification"),
-    VERIFIED("verified"),
-    LOCKED("locked"),
-    CREDENTIALS_EXPIRED("credentials_expired"),
-    EXPIRED("expired"),
-    DELETED("deleted");
+    PENDING_VERIFICATION("pending_verification", "Pending Verification"),
+    VERIFIED("verified", "Verified"),
+    LOCKED("locked", "Locked"),
+    CREDENTIALS_EXPIRED("credentials_expired", "Credentials Expired"),
+    EXPIRED("expired", "Expired"),
+    DELETED("deleted", "Deleted");
+
+    private final String code;
     private final String name;
 
-    private AccountStatusEnum(final @NotNull String name) {
+    private AccountStatusEnum(String code, String name) {
+        this.code = code;
         this.name = name;
     }
 
+    public String getCode() { return code; }
     public String getName() {
         return name;
     }
 
-    public static Optional<AccountStatusEnum> of(final @NotNull String name) {
+    public static Optional<AccountStatusEnum> of(String code) {
         return Stream.of(values())
                 .filter(accountStatusEnum ->
-                        accountStatusEnum.getName().equalsIgnoreCase(name))
+                        accountStatusEnum.getCode().equalsIgnoreCase(code))
                 .findFirst();
     }
 }
