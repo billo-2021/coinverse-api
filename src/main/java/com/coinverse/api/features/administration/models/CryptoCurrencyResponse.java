@@ -1,4 +1,4 @@
-package com.coinverse.api.features.quote.models;
+package com.coinverse.api.features.administration.models;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,5 +11,5 @@ public class CryptoCurrencyResponse {
     private String name;
     private String code;
     private String symbol;
-    private double circulatingSupply;
+    private Long circulatingSupply;
 }

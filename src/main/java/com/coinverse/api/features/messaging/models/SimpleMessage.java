@@ -18,6 +18,6 @@ public class SimpleMessage extends Message {
                          @NotNull final String content) {
         super(subject, content);
         this.source = source;
-        this.destination = subject;
+        this.destination = destination;
     }
 }

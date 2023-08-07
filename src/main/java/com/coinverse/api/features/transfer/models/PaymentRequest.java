@@ -9,7 +9,11 @@ import lombok.Data;
 @Builder
 public class PaymentRequest {
     private double amount;
-    private String currencyCode;
+    private String amountCurrencyCode;
+    private String currencyPairName;
+    private String fromCurrencyCode;
+    private String toCurrencyCode;
+    private Long quoteId;
     private String method;
     private String action;
 }

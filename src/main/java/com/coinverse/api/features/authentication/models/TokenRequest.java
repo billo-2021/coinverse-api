@@ -1,7 +1,7 @@
 package com.coinverse.api.features.authentication.models;
 
 import com.coinverse.api.common.validators.EnumValidator;
-import com.coinverse.api.features.messaging.models.MessagingChannel;
+import com.coinverse.api.features.messaging.models.MessagingChannelEnum;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -24,6 +24,6 @@ public class TokenRequest {
     @Email(message = "Invalid email")
     private String username;
 
-    @EnumValidator(message = "messagingChannel is required", target = MessagingChannel.class)
+    @EnumValidator(message = "messagingChannel is required", target = MessagingChannelEnum.class)
     private String messagingChannel;
 }

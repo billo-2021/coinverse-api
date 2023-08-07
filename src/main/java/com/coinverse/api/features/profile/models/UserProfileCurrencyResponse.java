@@ -1,15 +1,15 @@
-package com.coinverse.api.features.quote.models;
+package com.coinverse.api.features.profile.models;
 
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@NoArgsConstructor
 @AllArgsConstructor
 @Data
 @Builder
-@JsonPropertyOrder({"code", "name", "symbol"})
-public class CurrencyResponse {
+public class UserProfileCurrencyResponse {
     private String code;
     private String name;
     private String symbol;

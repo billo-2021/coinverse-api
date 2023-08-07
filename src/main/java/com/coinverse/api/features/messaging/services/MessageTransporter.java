@@ -6,5 +6,5 @@ import org.springframework.stereotype.Service;
 
 @Service
 public interface MessageTransporter<T extends Message> {
-    void transmit(@NotNull final T message);
+    void transmit(final T message);
 }
