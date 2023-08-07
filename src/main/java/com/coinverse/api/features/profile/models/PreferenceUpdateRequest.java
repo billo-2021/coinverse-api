@@ -19,7 +19,4 @@ public class PreferenceUpdateRequest {
 
     @NotNull(message = "notifications is required")
     private Set<String> notificationMethods;
-
-    private String deviceDetails;
-    private String ipAddress;
 }
