@@ -2,11 +2,14 @@ package com.coinverse.api.features.authentication.exceptions;
 
 import com.coinverse.api.common.errors.ErrorResponse;
 import com.coinverse.api.common.models.AccountResponse;
+import com.coinverse.api.common.models.UserAccountEventRequest;
+import com.coinverse.api.common.models.UserAccountEventTypeEnum;
 import com.coinverse.api.common.security.exceptions.AccountDisabledException;
 import com.coinverse.api.common.security.exceptions.AccountLockedException;
 import com.coinverse.api.common.security.exceptions.ApiAuthenticationException;
 import com.coinverse.api.common.security.exceptions.VerificationRequiredException;
 import com.coinverse.api.common.services.AccountService;
+import com.coinverse.api.common.services.UserAccountEventService;
 import com.coinverse.api.common.utils.ExceptionUtil;
 import com.coinverse.api.features.authentication.models.LoginRequest;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +30,8 @@ public class AuthenticationExceptionHandler {
     private final AccountService accountService;
     private final PasswordEncoder passwordEncoder;
 
+    private final UserAccountEventService userAccountEventService;
+
     @ExceptionHandler(LoginAuthenticationException.class)
     public ResponseEntity<ErrorResponse> handleAuthenticationException(
             final LoginAuthenticationException loginAuthEx) {
@@ -42,6 +47,18 @@ public class AuthenticationExceptionHandler {
                 .matches(password, accountResponse.getPassword());
 
         accountService.addAccountLoginAttemptsById(accountResponse.getId());
+
+        UserAccountEventTypeEnum eventTypeEnum = UserAccountEventTypeEnum.LOGIN_ATTEMPT_FAILURE;
+
+        UserAccountEventRequest userAccountEventRequest = UserAccountEventRequest
+                .builder()
+                .type(eventTypeEnum.getCode())
+                .description(eventTypeEnum.getDescription())
+                .deviceDetails(loginRequest.getDeviceDetails())
+                .ipAddress(loginRequest.getIpAddress())
+                .build();
+
+        userAccountEventService.addEvent(accountResponse.getUsername(), userAccountEventRequest);
 
         if (passwordsMatch && authEx instanceof LockedException) {
             return handleApiAuthenticationException(new AccountLockedException());
