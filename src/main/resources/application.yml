@@ -5,3 +5,8 @@ spring:
     allow-bean-definition-overriding: true
   jackson:
     time-zone: UTC
+application:
+  title:
+    Coinverse API
+  version:
+    0.0.1
