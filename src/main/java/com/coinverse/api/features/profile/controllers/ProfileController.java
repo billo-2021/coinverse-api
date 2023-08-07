@@ -1,90 +1,52 @@
 package com.coinverse.api.features.profile.controllers;
 
+import com.coinverse.api.common.config.routes.ProfileRoutes;
+import com.coinverse.api.common.constants.ApiMessage;
 import com.coinverse.api.common.models.ApiMessageResponse;
-import com.coinverse.api.common.services.DeviceResolutionService;
-import com.coinverse.api.common.utils.RequestUtil;
+import com.coinverse.api.common.models.UserAccountEventTypeEnum;
+import com.coinverse.api.common.services.UserAccountEventService;
 import com.coinverse.api.features.profile.models.*;
 import com.coinverse.api.features.profile.services.ProfileService;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Objects;
-
 @RestController
-@RequestMapping(ProfileController.PATH)
+@RequestMapping(ProfileRoutes.PATH)
 @RequiredArgsConstructor
 public class ProfileController {
-    public static final String PATH = "/api/v1/profile";
-
     private final ProfileService profileService;
-    private final DeviceResolutionService deviceResolutionService;
+    private final UserAccountEventService userAccountEventService;
 
     @PatchMapping
-    ApiMessageResponse updateProfile(@Valid @RequestBody final ProfileUpdateRequest profileUpdateRequest) {
+    ApiMessageResponse updateProfile(@Valid @RequestBody ProfileUpdateRequest profileUpdateRequest) {
         profileService.updateUserProfile(profileUpdateRequest);
-        return new ApiMessageResponse("User profile updated");
+        return ApiMessageResponse.of(ApiMessage.USER_PROFILE_UPDATED);
     }
 
-    @PatchMapping("/personal-information")
+    @PatchMapping(ProfileRoutes.PERSONAL_INFORMATION)
     UserProfileResponse updatePersonalInformation(@Valid @RequestBody
-                                                                 PersonalInformationUpdateRequest personalInformationUpdateRequest,
-                                                  HttpServletRequest request) {
-        final String deviceDetails = personalInformationUpdateRequest.getDeviceDetails();;
-        final String ipAddress = personalInformationUpdateRequest.getIpAddress();
-
-        if (Objects.isNull(deviceDetails) || deviceDetails.trim().isEmpty()) {
-            final String userAgentHeader = request.getHeader("user-agent");
-
-            personalInformationUpdateRequest.setDeviceDetails(deviceResolutionService.getDeviceDetails(userAgentHeader));
-        }
-
-        if (Objects.isNull(ipAddress) || ipAddress.trim().isEmpty()) {
-            personalInformationUpdateRequest.setIpAddress(RequestUtil.extractClientIp(request));
-        }
-
-        return profileService.updatePersonalInformation(personalInformationUpdateRequest);
+                                                                 PersonalInformationUpdateRequest personalInformationUpdateRequest) {
+        final UserProfileResponse userProfileResponse = profileService.updatePersonalInformation(personalInformationUpdateRequest);
+        userAccountEventService.addEvent(UserAccountEventTypeEnum.PROFILE_UPDATE);
+        return userProfileResponse;
     }
 
-    @PatchMapping("/address")
+    @PatchMapping(ProfileRoutes.ADDRESS)
     UserProfileResponse updateAddress(@Valid @RequestBody
-                                                     AddressUpdateRequest addressUpdateRequest,
-                                      HttpServletRequest request) {
-        final String deviceDetails = addressUpdateRequest.getDeviceDetails();;
-        final String ipAddress = addressUpdateRequest.getIpAddress();
-
-        if (Objects.isNull(deviceDetails) || deviceDetails.trim().isEmpty()) {
-            final String userAgentHeader = request.getHeader("user-agent");
-
-            addressUpdateRequest.setDeviceDetails(deviceResolutionService.getDeviceDetails(userAgentHeader));
-        }
-
-        if (Objects.isNull(ipAddress) || ipAddress.trim().isEmpty()) {
-            addressUpdateRequest.setIpAddress(RequestUtil.extractClientIp(request));
-        }
-
-        return profileService.updateUserAddress(addressUpdateRequest);
+                                                     AddressUpdateRequest addressUpdateRequest) {
+        final UserProfileResponse userProfileResponse = profileService.updateUserAddress(addressUpdateRequest);
+        userAccountEventService.addEvent(UserAccountEventTypeEnum.USER_ADDRESS_UPDATE);
+        return userProfileResponse;
     }
 
-    @PatchMapping("/preference")
+    @PatchMapping(ProfileRoutes.PREFERENCE)
     UserProfileResponse updatePreference(@Valid @RequestBody
-                                                         PreferenceUpdateRequest preferenceUpdateRequest,
-                                         HttpServletRequest request) {
-        final String deviceDetails = preferenceUpdateRequest.getDeviceDetails();;
-        final String ipAddress = preferenceUpdateRequest.getIpAddress();
+                                                         PreferenceUpdateRequest preferenceUpdateRequest) {
 
-        if (Objects.isNull(deviceDetails) || deviceDetails.trim().isEmpty()) {
-            final String userAgentHeader = request.getHeader("user-agent");
-
-            preferenceUpdateRequest.setDeviceDetails(deviceResolutionService.getDeviceDetails(userAgentHeader));
-        }
-
-        if (Objects.isNull(ipAddress) || ipAddress.trim().isEmpty()) {
-            preferenceUpdateRequest.setIpAddress(RequestUtil.extractClientIp(request));
-        }
-
-        return profileService.updateUserPreference(preferenceUpdateRequest);
+        final UserProfileResponse userProfileResponse = profileService.updateUserPreference(preferenceUpdateRequest);
+        userAccountEventService.addEvent(UserAccountEventTypeEnum.USER_PREFERENCE_UPDATE);
+        return userProfileResponse;
     }
 
     @GetMapping
