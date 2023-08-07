@@ -8,5 +8,5 @@ import java.util.Optional;
 
 @Repository
 public interface CryptoCurrencyRepository extends JpaRepository<CryptoCurrency, Long> {
-    Optional<CryptoCurrency> findByCode(String code);
+    Optional<CryptoCurrency> findByCurrencyCodeIgnoreCase(String currencyCode);
 }

@@ -9,5 +9,5 @@ import java.util.Optional;
 
 @Repository
 public interface AccountStatusRepository extends JpaRepository<AccountStatus, Long> {
-    Optional<AccountStatus> findByName(final @NotNull String name);
+    Optional<AccountStatus> findByCodeIgnoreCase(String code);
 }

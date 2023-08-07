@@ -8,5 +8,5 @@ import java.util.Optional;
 
 @Repository
 public interface PaymentMethodRepository extends JpaRepository<PaymentMethod, Long> {
-    Optional<PaymentMethod> findByName(String name);
+    Optional<PaymentMethod> findByCodeIgnoreCase(String code);
 }

@@ -10,6 +10,7 @@ import java.util.Optional;
 
 @Repository
 public interface AccountTokenRepository extends JpaRepository<AccountToken, Long> {
-    Optional<AccountToken> findByAccountIdAndTypeId(final @NotNull Long accountId, final @NotNull Long typeId);
-    List<AccountToken> findByAccountId(final @NotNull Long accountId);
+    Optional<AccountToken> findByAccountIdAndTypeId(Long accountId, final @NotNull Long typeId);
+    Optional<AccountToken> findByKeyAndTypeId(String key, final Long typeId);
+    List<AccountToken> findByAccountId(Long accountId);
 }

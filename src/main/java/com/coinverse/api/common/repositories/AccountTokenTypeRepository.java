@@ -9,5 +9,5 @@ import java.util.Optional;
 
 @Repository
 public interface AccountTokenTypeRepository extends JpaRepository<AccountTokenType, Long> {
-    Optional<AccountTokenType> findByName(final @NotNull String name);
+    Optional<AccountTokenType> findByCodeIgnoreCase(String code);
 }
