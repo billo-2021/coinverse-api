@@ -2,20 +2,13 @@ package com.coinverse.api.features.authentication.services;
 
 import com.coinverse.api.common.models.*;
 import com.coinverse.api.common.security.exceptions.*;
-import com.coinverse.api.common.services.AccountService;
-import com.coinverse.api.common.services.UserAccountEventService;
+import com.coinverse.api.common.security.services.UserAuthenticationService;
 import com.coinverse.api.common.services.UserService;
 import com.coinverse.api.common.security.services.JwtService;
-import com.coinverse.api.features.authentication.exceptions.LoginAuthenticationException;
 import com.coinverse.api.features.authentication.mappers.AuthenticationMapper;
 import com.coinverse.api.features.authentication.models.*;
-import com.coinverse.api.features.authentication.validators.LoginRequestValidator;
 import com.coinverse.api.features.messaging.models.MessagingChannelEnum;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.*;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -25,18 +18,14 @@ import java.util.Set;
 @Service
 @RequiredArgsConstructor
 public class AuthenticationServiceImpl implements AuthenticationService {
+    private final UserAuthenticationService userAuthenticationService;
     private final UserService userService;
-    private final AccountService accountService;
     private final AuthenticationMapper authenticationMapper;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
-    private final AuthenticationManager authenticationManager;
     private final AccountVerificationService accountVerificationService;
-    private final LoginRequestValidator loginRequestValidator;
 
     private final ResetPasswordService resetPasswordService;
-
-    private final UserAccountEventService userAccountEventService;
 
     @Override
     public UserResponse register(RegisterRequest registerRequest) {
@@ -46,7 +35,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         final UserResponse userResponse = userService.addUser(userRequest);
         final AccountResponse accountResponse = userResponse.getAccount();
-
         checkToRequestToken(accountResponse);
 
         return userResponse;
@@ -54,57 +42,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public LoginResponse login(LoginRequest loginRequest) {
-        final AccountResponse accountResponse = loginRequestValidator.validate(loginRequest);
+        final AccountResponse accountResponse = userAuthenticationService.authenticate(loginRequest.getUsername(),
+                loginRequest.getPassword());
 
-        try {
-            final String username = loginRequest.getUsername();
-            final String password = loginRequest.getPassword();
-
-            final UsernamePasswordAuthenticationToken usernamePasswordAuthToken =
-                    new UsernamePasswordAuthenticationToken(username, password);
-
-            final Authentication authentication = authenticationManager.
-                    authenticate(usernamePasswordAuthToken);
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-
-            accountService.resetAccountLoginAttemptsById(accountResponse.getId());
-
-            UserAccountEventTypeEnum eventTypeEnum = UserAccountEventTypeEnum.LOGIN_ATTEMPT_SUCCESS;
-
-            UserAccountEventRequest userAccountEventRequest = UserAccountEventRequest
-                    .builder()
-                    .type(eventTypeEnum.getCode())
-                    .description(eventTypeEnum.getDescription())
-                    .deviceDetails(loginRequest.getDeviceDetails())
-                    .ipAddress(loginRequest.getIpAddress())
-                    .build();
-
-            userAccountEventService.addEvent(accountResponse.getUsername(), userAccountEventRequest);
-            checkToRequestToken(accountResponse);
-
-            return getLoginResponse(accountResponse);
-        } catch (AuthenticationException ex) {
-            final boolean passwordsMatch = passwordEncoder
-                    .matches(loginRequest.getPassword(), accountResponse.getPassword());
-
-            if (passwordsMatch && ex instanceof DisabledException && accountResponse.getIsEnabled()) {
-                UserAccountEventTypeEnum eventTypeEnum = UserAccountEventTypeEnum.LOGIN_ATTEMPT_SUCCESS;
-
-                UserAccountEventRequest userAccountEventRequest = UserAccountEventRequest
-                        .builder()
-                        .type(eventTypeEnum.getCode())
-                        .description(eventTypeEnum.getDescription())
-                        .deviceDetails(loginRequest.getDeviceDetails())
-                        .ipAddress(loginRequest.getIpAddress())
-                        .build();
-
-                userAccountEventService.addEvent(accountResponse.getUsername(), userAccountEventRequest);
-
-                return getLoginResponse(accountResponse);
-            }
-
-            throw new LoginAuthenticationException(loginRequest, accountResponse, ex);
-        }
+        checkToRequestToken(accountResponse);
+        return getLoginResponse(accountResponse);
     }
 
     @Override
