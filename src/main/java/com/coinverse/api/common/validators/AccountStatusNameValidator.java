@@ -4,7 +4,7 @@ import com.coinverse.api.common.entities.AccountStatus;
 import com.coinverse.api.common.exceptions.InvalidRequestException;
 import com.coinverse.api.common.exceptions.MappingException;
 import com.coinverse.api.common.repositories.AccountStatusRepository;
-import jakarta.validation.constraints.NotNull;
+import com.coinverse.api.common.utils.ErrorMessageUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -14,11 +14,11 @@ public class AccountStatusNameValidator implements RequestValidator<String, Acco
     private final AccountStatusRepository accountStatusRepository;
 
     @Override
-    public AccountStatus validate(@NotNull String statusName) throws InvalidRequestException, MappingException {
+    public AccountStatus validate(String statusName) throws InvalidRequestException, MappingException {
         return accountStatusRepository
                 .findByCodeIgnoreCase(statusName)
                 .orElseThrow(() ->
-                        new MappingException("Invalid status '" + statusName + "'")
+                        ErrorMessageUtils.getMappingException("status", statusName)
                 );
     }
 }

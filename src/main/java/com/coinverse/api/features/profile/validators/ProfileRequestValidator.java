@@ -1,10 +1,10 @@
 package com.coinverse.api.features.profile.validators;
 
-import com.coinverse.api.common.exceptions.InvalidRequestException;
 import com.coinverse.api.common.models.UserPreferenceUpdateRequest;
 import com.coinverse.api.common.models.UserResponse;
 import com.coinverse.api.common.models.UserUpdateRequest;
 import com.coinverse.api.common.services.UserService;
+import com.coinverse.api.common.utils.ErrorMessageUtils;
 import com.coinverse.api.features.profile.models.ProfilePreferenceUpdateRequest;
 import com.coinverse.api.features.profile.models.ProfileUpdateRequest;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +17,7 @@ public class ProfileRequestValidator {
 
     public UserResponse validateUserAccountId(Long accountId) {
         return userService.getUserByAccountId(accountId)
-                .orElseThrow(InvalidRequestException::new);
+                .orElseThrow(ErrorMessageUtils::getInvalidRequestException);
     }
     public UserUpdateRequest validateProfileUpdate(ProfileUpdateRequest userProfileUpdateRequest) {
         ProfilePreferenceUpdateRequest profilePreferenceUpdateRequest = userProfileUpdateRequest.getPreference();

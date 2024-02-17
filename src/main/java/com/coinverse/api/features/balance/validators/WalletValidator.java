@@ -1,8 +1,8 @@
 package com.coinverse.api.features.balance.validators;
 
 import com.coinverse.api.common.entities.Account;
-import com.coinverse.api.common.exceptions.MappingException;
 import com.coinverse.api.common.repositories.AccountRepository;
+import com.coinverse.api.common.utils.ErrorMessageUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -13,7 +13,6 @@ public class WalletValidator {
 
     public Account validateWalletUsername(String username) {
         return accountRepository.findByUsernameIgnoreCase(username)
-                .orElseThrow(() -> new MappingException("Unable to find account for username '"
-                        + username + "'"));
+                .orElseThrow(() -> ErrorMessageUtils.getUnableToFindMappingException("account", "username", username));
     }
 }

@@ -1,12 +1,11 @@
 package com.coinverse.api.features.authentication.validators;
 
-import com.coinverse.api.common.exceptions.InvalidRequestException;
 import com.coinverse.api.common.models.AccountResponse;
 import com.coinverse.api.common.models.AccountStatusEnum;
 import com.coinverse.api.common.services.AccountService;
+import com.coinverse.api.common.utils.ErrorMessageUtils;
 import com.coinverse.api.features.authentication.models.TokenRequest;
 import com.coinverse.api.features.authentication.models.TokenVerifyRequest;
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -15,21 +14,21 @@ import org.springframework.stereotype.Component;
 public class AccountVerificationValidator {
     private final AccountService accountService;
 
-    public AccountResponse validateRequestToken(@NotNull TokenRequest tokenRequest) {
+    public AccountResponse validateRequestToken(TokenRequest tokenRequest) {
        return validateAccountNotAlreadyVerified(tokenRequest.getUsername());
     }
 
-    public AccountResponse validateVerifyAccount(@NotNull TokenVerifyRequest tokenVerifyRequest) {
+    public AccountResponse validateVerifyAccount(TokenVerifyRequest tokenVerifyRequest) {
         return validateAccountNotAlreadyVerified(tokenVerifyRequest.getUsername());
     }
 
-    private AccountResponse validateAccountNotAlreadyVerified(@NotNull final String username) {
+    private AccountResponse validateAccountNotAlreadyVerified(String username) {
         final AccountResponse accountResponse = accountService
                 .getAccountByUsername(username)
-                .orElseThrow(InvalidRequestException::new);
+                .orElseThrow(ErrorMessageUtils::getInvalidRequestException);
 
         if (accountResponse.getStatus() == AccountStatusEnum.VERIFIED) {
-            throw new InvalidRequestException();
+            throw ErrorMessageUtils.getInvalidRequestException();
         }
 
         return accountResponse;

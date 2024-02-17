@@ -1,14 +1,13 @@
 package com.coinverse.api.features.profile.services;
 
 import com.coinverse.api.common.entities.*;
-import com.coinverse.api.common.exceptions.InvalidRequestException;
-import com.coinverse.api.common.exceptions.MappingException;
 import com.coinverse.api.common.models.UserResponse;
 import com.coinverse.api.common.models.UserUpdateRequest;
 import com.coinverse.api.common.repositories.*;
 import com.coinverse.api.common.security.models.UserAccount;
 import com.coinverse.api.common.security.services.UserAccountService;
 import com.coinverse.api.common.services.UserService;
+import com.coinverse.api.common.utils.ErrorMessageUtils;
 import com.coinverse.api.features.profile.mappers.ProfileMapper;
 import com.coinverse.api.features.profile.models.*;
 import com.coinverse.api.features.profile.validators.ProfileRequestValidator;
@@ -48,7 +47,7 @@ public class ProfileService {
     public UserProfileResponse getUserProfile() {
         final UserAccount userAccount = userAccountService.getCurrentUser();
         final User user = userRepository.findByAccountId(userAccount.getId())
-                .orElseThrow(() -> new MappingException("Invalid username '" + userAccount.getUsername() + "'"));
+                .orElseThrow(() -> ErrorMessageUtils.getMappingException("username", userAccount.getUsername()));
 
         return profileMapper.userToUserProfileResponse(user);
     }
@@ -57,7 +56,7 @@ public class ProfileService {
     public UserProfileResponse updatePersonalInformation(PersonalInformationUpdateRequest personalInformationUpdateRequest) {
         final UserAccount userAccount = userAccountService.getCurrentUser();
         final User user = userRepository.findByAccountId(userAccount.getId())
-                .orElseThrow(() -> new MappingException("Invalid username '" + userAccount.getUsername() + "'"));
+                .orElseThrow(() -> ErrorMessageUtils.getMappingException("username", userAccount.getUsername()));
 
         user.setEmailAddress(personalInformationUpdateRequest.getEmailAddress());
         user.setFirstName(personalInformationUpdateRequest.getFirstName());
@@ -72,7 +71,7 @@ public class ProfileService {
     public UserProfileResponse updateUserAddress(AddressUpdateRequest addressUpdateRequest) {
         final UserAccount userAccount = userAccountService.getCurrentUser();
         final User user = userRepository.findByAccountId(userAccount.getId())
-                .orElseThrow(() -> new MappingException("Invalid username '" + userAccount.getUsername() + "'"));
+                .orElseThrow(() -> ErrorMessageUtils.getMappingException("username", userAccount.getUsername()));
 
         final Address address = user.getAddress();
         address.setAddressLine(addressUpdateRequest.getAddressLine());
@@ -80,7 +79,8 @@ public class ProfileService {
         address.setCity(addressUpdateRequest.getCity());
 
         Country addressCountry = countryRepository.findByCodeIgnoreCase(addressUpdateRequest.getCountryCode())
-                .orElseThrow(() -> new InvalidRequestException("Invalid countryCode '" + addressUpdateRequest.getCountryCode() + "'"));
+                .orElseThrow(() -> ErrorMessageUtils.getInvalidRequestException("countryCode", addressUpdateRequest.getCountryCode()));
+
         address.setCountry(addressCountry);
 
         addressRepository.saveAndFlush(address);
@@ -91,18 +91,19 @@ public class ProfileService {
     public UserProfileResponse updateUserPreference(PreferenceUpdateRequest preferenceUpdateRequest) {
         final UserAccount userAccount = userAccountService.getCurrentUser();
         final User user = userRepository.findByAccountId(userAccount.getId())
-                .orElseThrow(() -> new MappingException("Invalid username '" + userAccount.getUsername() + "'"));
+                .orElseThrow(() -> ErrorMessageUtils.getMappingException("username", userAccount.getUsername()));
 
         final String currencyCode = preferenceUpdateRequest.getCurrencyCode();
         Currency currency = currencyRepository.findByCodeIgnoreCase(currencyCode)
-                .orElseThrow(() -> new InvalidRequestException("Invalid currencyCode '" + currencyCode + "'"));
+                .orElseThrow(() -> ErrorMessageUtils.getInvalidRequestException("currencyCode", currencyCode));
 
         final Set<String> notificationMethods = preferenceUpdateRequest.getNotificationMethods();
 
         final Set<NotificationChannel> notificationChannels = notificationMethods
                 .stream()
                 .map(notificationMethod -> notificationChannelRepository.findByCodeIgnoreCase(notificationMethod)
-                        .orElseThrow(() -> new InvalidRequestException("Invalid notificationMethod '" + notificationMethod + "'"))).collect(Collectors.toSet());
+                        .orElseThrow(() -> ErrorMessageUtils.getInvalidRequestException("notificationMethod", notificationMethod))
+                ).collect(Collectors.toSet());
 
         final UserPreference userPreference = user.getPreference();
         userPreference.setCurrency(currency);

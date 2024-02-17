@@ -10,9 +10,8 @@ public class RandomUtil {
 
     public static Integer nextIntKey(int keyLength) {
         final SecureRandom random = new SecureRandom();
-
-        int lowerBound = (int) Math.pow(10, keyLength - 1);
-        int bound = (int) Math.pow(10, keyLength);
+        final int lowerBound = (int) Math.pow(10, keyLength - 1);
+        final int bound = (int) Math.pow(10, keyLength);
 
         return random.nextInt(lowerBound, bound);
     }

@@ -4,6 +4,7 @@ import com.coinverse.api.common.entities.AccountTokenType;
 import com.coinverse.api.common.exceptions.InvalidRequestException;
 import com.coinverse.api.common.exceptions.MappingException;
 import com.coinverse.api.common.repositories.AccountTokenTypeRepository;
+import com.coinverse.api.common.utils.ErrorMessageUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -17,7 +18,7 @@ public class AccountTokenTypeCodeRequestValidator implements RequestValidator<St
         return accountTokenTypeRepository
                 .findByCodeIgnoreCase(verificationMethod)
                 .orElseThrow(() ->
-                        new InvalidRequestException("Invalid verification method name '" + verificationMethod + "'")
+                        ErrorMessageUtils.getInvalidRequestException("verificationMethodName", verificationMethod)
                 );
     }
 }

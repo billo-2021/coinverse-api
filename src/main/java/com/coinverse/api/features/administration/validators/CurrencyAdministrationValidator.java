@@ -3,12 +3,11 @@ package com.coinverse.api.features.administration.validators;
 import com.coinverse.api.common.entities.CryptoCurrency;
 import com.coinverse.api.common.entities.Currency;
 import com.coinverse.api.common.entities.CurrencyType;
-import com.coinverse.api.common.exceptions.MappingException;
-import com.coinverse.api.common.exceptions.ValidationException;
 import com.coinverse.api.common.models.CurrencyTypeEnum;
 import com.coinverse.api.common.repositories.CryptoCurrencyRepository;
 import com.coinverse.api.common.repositories.CurrencyRepository;
 import com.coinverse.api.common.repositories.CurrencyTypeRepository;
+import com.coinverse.api.common.utils.ErrorMessageUtils;
 import com.coinverse.api.features.administration.mappers.CryptoCurrencyMapper;
 import com.coinverse.api.features.administration.models.CryptoCurrencyRequest;
 import lombok.RequiredArgsConstructor;
@@ -29,12 +28,11 @@ public class CurrencyAdministrationValidator {
 
         final CurrencyType currencyType  = currencyTypeRepository
                 .findByCodeIgnoreCase(currencyTypeEnum.getName())
-                .orElseThrow(() -> new MappingException("Currency name '" + currencyTypeEnum.getName() +
-                "' is invalid"));
+                .orElseThrow(() -> ErrorMessageUtils.getMappingException("currencyName", currencyTypeEnum.getName()));
 
         final Optional<Currency> existingCurrency = currencyRepository.findByCodeIgnoreCase(cryptoCurrencyRequest.getCode());
         existingCurrency.ifPresent((currency) -> {
-            throw new ValidationException("Currency with code '" + currency.getCode() + "' already exists", "code");
+            throw ErrorMessageUtils.getAlreadyExistValidationException("Currency", "code", currency.getCode());
         });
 
         final Currency currency = cryptoCurrencyMapper.cryptoCurrencyRequestToCurrency(cryptoCurrencyRequest);
@@ -49,6 +47,6 @@ public class CurrencyAdministrationValidator {
 
     public CryptoCurrency validateCryptoCurrencyUpdateRequest(String currencyCode) {
         return cryptoCurrencyRepository.findByCurrencyCodeIgnoreCase(currencyCode)
-                .orElseThrow(() -> new ValidationException("Crypto currency with code '" + currencyCode + "' does not exist"));
+                .orElseThrow(() -> ErrorMessageUtils.getDoesNotExistValidationException("CryptoCurrency", "code", currencyCode));
     }
 }

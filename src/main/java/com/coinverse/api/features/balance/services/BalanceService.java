@@ -7,5 +7,5 @@ import org.springframework.data.domain.Pageable;
 public interface BalanceService {
     PageResponse<WalletResponse> getBalances(Pageable pageable);
     PageResponse<WalletResponse> getAllBalances();
-    WalletResponse getBalancesByWalletId(final Long id);
+    WalletResponse getBalancesByWalletId(Long id);
 }

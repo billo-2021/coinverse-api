@@ -1,10 +1,10 @@
 package com.coinverse.api.features.authentication.services;
 
 import com.coinverse.api.common.models.*;
-import com.coinverse.api.common.security.exceptions.*;
 import com.coinverse.api.common.security.services.UserAuthenticationService;
 import com.coinverse.api.common.services.UserService;
 import com.coinverse.api.common.security.services.JwtService;
+import com.coinverse.api.common.utils.ErrorMessageUtils;
 import com.coinverse.api.features.authentication.mappers.AuthenticationMapper;
 import com.coinverse.api.features.authentication.models.*;
 import com.coinverse.api.features.messaging.models.MessagingChannelEnum;
@@ -89,7 +89,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     private LoginResponse getLoginResponse(AccountResponse accountResponse) {
         final UserResponse userResponse = userService.getUserByAccountId(accountResponse.getId())
-                .orElseThrow(InvalidCredentialsException::new);
+                .orElseThrow(ErrorMessageUtils::getInvalidCredentialsException);
 
         final List<String> roles = accountResponse.getRoles().stream().toList();
 

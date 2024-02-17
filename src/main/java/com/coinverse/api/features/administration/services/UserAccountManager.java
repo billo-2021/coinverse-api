@@ -3,7 +3,6 @@ package com.coinverse.api.features.administration.services;
 import com.coinverse.api.common.entities.Account;
 import com.coinverse.api.common.repositories.AccountRepository;
 import com.coinverse.api.features.administration.validators.UserAccountValidator;
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,7 +21,7 @@ public class UserAccountManager {
     }
 
     @Transactional
-    public void enableUserAccount(@NotNull final String username) {
+    public void enableUserAccount(String username) {
         final Account account = userAccountValidator.validateUsername(username);
         account.setIsEnabled(true);
         accountRepository.save(account);

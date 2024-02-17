@@ -18,7 +18,7 @@ public class ResetPasswordTokenGenerator implements StringTokenGenerator {
         this(DEFAULT_DURATION);
     }
 
-    ResetPasswordTokenGenerator(final Duration duration) {
+    ResetPasswordTokenGenerator(Duration duration) {
         this.duration = duration;
     }
 

@@ -1,7 +1,6 @@
 package com.coinverse.api.features.messaging.services;
 
 import com.coinverse.api.features.messaging.models.SimpleMessage;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +26,7 @@ public class EmailMessageTransporter implements MessageTransporter<SimpleMessage
         mailMessage.setText(message.getContent());
 
         try {
-            this.emailSender.send(mailMessage);
+            //this.emailSender.send(mailMessage);
         } catch (Exception ex) {
             logger.error("Exception while trying to send email");
         }

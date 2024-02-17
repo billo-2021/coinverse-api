@@ -3,9 +3,9 @@ package com.coinverse.api.common.validators;
 import com.coinverse.api.common.entities.*;
 import com.coinverse.api.common.exceptions.InvalidRequestException;
 import com.coinverse.api.common.exceptions.MappingException;
-import com.coinverse.api.common.exceptions.ValidationException;
 import com.coinverse.api.common.models.*;
 import com.coinverse.api.common.repositories.UserRepository;
+import com.coinverse.api.common.utils.ErrorMessageUtils;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -22,16 +22,14 @@ public class UserRequestValidator implements RequestValidator<UserRequest, User>
     public User validate(@NotNull final UserRequest userRequest) throws InvalidRequestException, MappingException {
         userRepository.findByEmailAddressIgnoreCase(userRequest.getEmailAddress())
                 .ifPresent((user) -> {
-                    throw new ValidationException("User with email address '" +
-                            user.getEmailAddress() + "' already exists", "emailAddress");
-                        }
-                );
+                    throw ErrorMessageUtils.getAlreadyExistValidationException("User", "emailAddress", user.getEmailAddress());
+                });
 
         AccountRequest accountRequest = userRequest.getAccount();
         AddressRequest addressRequest = userRequest.getAddress();
         UserPreferenceRequest userPreferenceRequest = userRequest.getPreference();
 
-        Account account = accountRequestValidator.validate(accountRequest);
+        Account account = accountRequestValidator.validateAccountRequest(accountRequest);
         Address address = addressRequestValidator.validate(addressRequest);
         UserPreference preference = userPreferenceRequestValidator.validate(userPreferenceRequest);
 

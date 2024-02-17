@@ -54,7 +54,7 @@ public class AdministrationController {
     }
 
     @PostMapping(AdministrationRoutes.CRYPTO)
-    public ResponseEntity<CryptoCurrencyResponse> addNewCryptoCurrency(@Valid @RequestBody
+    public ResponseEntity<CryptoCurrencyResponse> addCryptoCurrency(@Valid @RequestBody
                                                                            CryptoCurrencyRequest cryptoCurrencyRequest) {
         final CryptoCurrencyResponse cryptoCurrency = administrationService.addCryptoCurrency(cryptoCurrencyRequest);
 

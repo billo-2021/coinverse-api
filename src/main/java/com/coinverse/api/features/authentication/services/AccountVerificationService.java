@@ -1,12 +1,12 @@
 package com.coinverse.api.features.authentication.services;
 
 import com.coinverse.api.common.entities.User;
-import com.coinverse.api.common.exceptions.MappingException;
 import com.coinverse.api.common.models.AccountResponse;
 import com.coinverse.api.common.models.AccountTokenTypeEnum;
 import com.coinverse.api.common.models.AccountTokenResponse;
 import com.coinverse.api.common.repositories.UserRepository;
 import com.coinverse.api.common.services.AccountService;
+import com.coinverse.api.common.utils.ErrorMessageUtils;
 import com.coinverse.api.features.authentication.models.TokenRequest;
 import com.coinverse.api.features.authentication.models.TokenVerifyRequest;
 import com.coinverse.api.features.authentication.validators.AccountVerificationValidator;
@@ -28,7 +28,7 @@ public class AccountVerificationService {
     public void requestToken(TokenRequest tokenRequest) {
         final AccountResponse accountResponse = accountVerificationValidator.validateRequestToken(tokenRequest);
         final User user = userRepository.findByAccountId(accountResponse.getId())
-                .orElseThrow(() -> new MappingException("Unable to find user with username '" + accountResponse.getUsername() + "'"));
+                .orElseThrow(() -> ErrorMessageUtils.getMappingException("account.status", accountResponse.getUsername()));
 
         accountTokenService.requestToken(accountResponse.getId(),
                 TOKEN_TYPE_CODE,

@@ -6,8 +6,6 @@ import com.coinverse.api.features.administration.models.CryptoCurrencyRequest;
 import com.coinverse.api.features.administration.models.CryptoCurrencyResponse;
 import com.coinverse.api.features.administration.models.CryptoCurrencyUpdateRequest;
 import com.coinverse.api.features.administration.models.UserResponse;
-import jakarta.validation.constraints.NotNull;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 public interface AdministrationService {

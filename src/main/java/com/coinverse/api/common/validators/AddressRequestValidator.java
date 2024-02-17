@@ -4,9 +4,9 @@ import com.coinverse.api.common.entities.Address;
 import com.coinverse.api.common.entities.Country;
 import com.coinverse.api.common.exceptions.InvalidRequestException;
 import com.coinverse.api.common.exceptions.MappingException;
-import com.coinverse.api.common.exceptions.ValidationException;
 import com.coinverse.api.common.models.AddressRequest;
 import com.coinverse.api.common.repositories.CountryRepository;
+import com.coinverse.api.common.utils.ErrorMessageUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -19,8 +19,7 @@ public class AddressRequestValidator implements RequestValidator<AddressRequest,
     public Address validate(AddressRequest addressRequest) throws InvalidRequestException, MappingException {
         final Country addressCountry = countryRepository.findByCodeIgnoreCase(addressRequest.getCountryCode())
                 .orElseThrow(() ->
-                        new ValidationException("Invalid address country '" +
-                                addressRequest.getCountryCode() + "'", "address.countryCode")
+                        ErrorMessageUtils.getValidationException("address.countryCode", addressRequest.getCountryCode())
                 );
 
         return Address.builder()

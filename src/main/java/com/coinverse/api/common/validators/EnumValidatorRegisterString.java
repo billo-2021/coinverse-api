@@ -8,9 +8,7 @@ import java.util.function.BiPredicate;
 import java.util.stream.Stream;
 
 public class EnumValidatorRegisterString implements ConstraintValidator<EnumValidator, String> {
-    private static BiPredicate<? super EnumValidatorComparator<?>, String> defaultComparison = (currentEnumValue, testValue) -> {
-        return currentEnumValue.toString().equals(testValue);
-    };
+    private static BiPredicate<? super EnumValidatorComparator<?>, String> defaultComparison = (currentEnumValue, testValue) -> currentEnumValue.toString().equals(testValue);
 
     public static void setDefaultComparison(BiPredicate<? super EnumValidatorComparator<?>, String> defaultComparison) {
         Assert.notNull(defaultComparison, "Default comparison can't be null");

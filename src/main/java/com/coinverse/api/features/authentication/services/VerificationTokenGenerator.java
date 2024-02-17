@@ -21,7 +21,7 @@ public class VerificationTokenGenerator implements StringTokenGenerator {
         this(DEFAULT_KEY_LENGTH, DEFAULT_DURATION);
     }
 
-    VerificationTokenGenerator(int keyLength, final Duration duration) {
+    VerificationTokenGenerator(int keyLength, Duration duration) {
         this.keyLength = keyLength;
         this.duration = duration;
     }

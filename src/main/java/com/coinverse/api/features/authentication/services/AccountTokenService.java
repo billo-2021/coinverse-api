@@ -8,6 +8,7 @@ import com.coinverse.api.common.models.*;
 import com.coinverse.api.common.services.AccountService;
 import com.coinverse.api.common.services.StringTokenGenerator;
 import com.coinverse.api.common.services.StringTokenService;
+import com.coinverse.api.common.utils.ErrorMessageUtils;
 import com.coinverse.api.features.authentication.models.GeneratedTokenMessage;
 import com.coinverse.api.features.authentication.models.TokenRequest;
 import com.coinverse.api.features.authentication.models.TokenVerifyRequest;
@@ -57,7 +58,7 @@ public class AccountTokenService {
         final MessagingChannelEnum messagingChannelEnum = MessagingChannelEnum
                 .of(tokenRequest.getMessagingChannel())
                 .orElseThrow(() ->
-                        new ValidationException("Invalid messaging channel '" + tokenRequest.getMessagingChannel() + "'", "messagingChannel")
+                        ErrorMessageUtils.getInvalidRequestException("messagingChannel", tokenRequest.getMessagingChannel())
                 );
 
         final Set<MessagingChannelEnum> messagingChannelEnums = Set.of(messagingChannelEnum);
@@ -71,7 +72,7 @@ public class AccountTokenService {
 
         final AccountTokenResponse accountTokenResponse = accountService
                 .getAccountTokenByAccountIdAndTokenTypeCode(accountId, tokenTypeCode)
-                .orElseThrow(InvalidRequestException::new);
+                .orElseThrow(ErrorMessageUtils::getInvalidRequestException);
 
         final Long accountVerificationId = accountTokenResponse.getId();
 

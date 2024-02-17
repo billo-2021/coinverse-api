@@ -6,7 +6,6 @@ import com.coinverse.api.common.repositories.*;
 import com.coinverse.api.common.services.WalletKeyGenerator;
 import com.coinverse.api.common.services.UserService;
 import com.coinverse.api.features.transfer.config.TransferProperties;
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -146,7 +145,7 @@ public class DatabaseSeeder implements CommandLineRunner {
         accountStatusRepository.saveAll(accountStatuses);
     }
 
-    private AccountStatus getAccountStatusByName(@NotNull final String statusName) {
+    private AccountStatus getAccountStatusByName(String statusName) {
         return accountStatuses.stream().filter(status ->
                 status.getName().equalsIgnoreCase(statusName))
                 .findFirst()
@@ -213,7 +212,7 @@ public class DatabaseSeeder implements CommandLineRunner {
         countryRepository.saveAll(countries);
     }
 
-    private Country getCountryByCode(@NotNull final String code) {
+    private Country getCountryByCode(String code) {
         return countries.stream()
                 .filter(country ->
                         country.getCode().equals(code)

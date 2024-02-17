@@ -1,9 +1,8 @@
 package com.coinverse.api.features.administration.validators;
 
 import com.coinverse.api.common.entities.Account;
-import com.coinverse.api.common.exceptions.InvalidRequestException;
 import com.coinverse.api.common.repositories.AccountRepository;
-import jakarta.validation.constraints.NotNull;
+import com.coinverse.api.common.utils.ErrorMessageUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -12,8 +11,8 @@ import org.springframework.stereotype.Component;
 public class UserAccountValidator {
     private final AccountRepository accountRepository;
 
-    public Account validateUsername(@NotNull final String username) {
+    public Account validateUsername(String username) {
         return accountRepository.findByUsernameIgnoreCase(username)
-                .orElseThrow(InvalidRequestException::new);
+                .orElseThrow(() -> ErrorMessageUtils.getInvalidRequestException("username", username));
     }
 }

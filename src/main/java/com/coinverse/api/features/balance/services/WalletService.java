@@ -1,9 +1,9 @@
 package com.coinverse.api.features.balance.services;
 
 import com.coinverse.api.common.entities.*;
-import com.coinverse.api.common.exceptions.InvalidRequestException;
 import com.coinverse.api.common.models.PageResponse;
 import com.coinverse.api.common.repositories.*;
+import com.coinverse.api.common.utils.ErrorMessageUtils;
 import com.coinverse.api.features.balance.mappers.WalletMapper;
 import com.coinverse.api.features.balance.models.WalletResponse;
 import com.coinverse.api.features.balance.validators.WalletValidator;
@@ -45,13 +45,13 @@ public class WalletService {
         final Account userAccount = walletValidator.validateWalletUsername(username);
 
         final Wallet wallet = walletRepository.findById(walletId)
-                .orElseThrow(() -> new InvalidRequestException("Invalid walletId"));
+                .orElseThrow(() -> ErrorMessageUtils.getInvalidRequestException("walletId", String.valueOf(walletId)));
 
         final Account walletAccount = wallet.getAccount();
         final Long walletAccountId = walletAccount.getId();
 
         if (!userAccount.getId().equals(walletAccountId)) {
-            throw new InvalidRequestException();
+            throw ErrorMessageUtils.getInvalidRequestException();
         }
 
         return walletMapper.walletToWalletResponse(wallet);

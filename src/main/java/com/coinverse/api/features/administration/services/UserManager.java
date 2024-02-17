@@ -2,16 +2,12 @@ package com.coinverse.api.features.administration.services;
 
 import com.coinverse.api.common.entities.*;
 import com.coinverse.api.common.models.PageResponse;
-import com.coinverse.api.common.models.RoleEnum;
 import com.coinverse.api.common.models.UserRequest;
 import com.coinverse.api.common.repositories.UserRepository;
 import com.coinverse.api.common.services.UserService;
 import com.coinverse.api.features.administration.models.*;
-import com.coinverse.api.features.administration.validators.UserManagerValidator;
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -26,7 +22,6 @@ public class UserManager {
     private final UserRepository userRepository;
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
-    private final UserManagerValidator userManagerValidator;
 
     public PageResponse<UserResponse> getUsers(Pageable pageable) {
         final Page<User> usersPage = userRepository.findAll(pageable);

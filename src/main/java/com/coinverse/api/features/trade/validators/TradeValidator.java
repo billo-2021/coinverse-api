@@ -1,9 +1,8 @@
 package com.coinverse.api.features.trade.validators;
 
 import com.coinverse.api.common.entities.Account;
-import com.coinverse.api.common.exceptions.InvalidRequestException;
 import com.coinverse.api.common.repositories.AccountRepository;
-import jakarta.validation.constraints.NotNull;
+import com.coinverse.api.common.utils.ErrorMessageUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -14,6 +13,6 @@ public class TradeValidator {
 
     public Account validateTradeUsername(String username) {
         return accountRepository.findByUsernameIgnoreCase(username)
-                .orElseThrow(InvalidRequestException::new);
+                .orElseThrow(ErrorMessageUtils::getInvalidRequestException);
     }
 }

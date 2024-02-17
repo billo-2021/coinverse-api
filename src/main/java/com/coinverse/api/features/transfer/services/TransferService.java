@@ -4,8 +4,6 @@ import com.coinverse.api.common.models.PageResponse;
 import com.coinverse.api.features.transfer.models.DepositRequest;
 import com.coinverse.api.features.transfer.models.PaymentResponse;
 import com.coinverse.api.features.transfer.models.WithdrawRequest;
-import jakarta.validation.constraints.NotNull;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 public interface TransferService {

@@ -7,7 +7,7 @@ public class ValidationErrorResponse extends ErrorResponse {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private final String fieldName;
     public ValidationErrorResponse(ValidationException ex) {
-        this(ex, false);
+        this(ex, true);
     }
 
     public ValidationErrorResponse(ValidationException ex, boolean showTimeStamp) {

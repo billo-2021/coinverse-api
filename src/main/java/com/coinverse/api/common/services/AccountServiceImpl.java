@@ -25,7 +25,7 @@ public class AccountServiceImpl implements AccountService {
     private final AccountRepository accountRepository;
     private final AccountTokenRepository accountTokenRepository;
 
-    private final AccountIdRequestValidator accountIdRequestValidator;
+    private final AccountRequestValidator accountRequestValidator;
     private final AccountStatusNameValidator accountStatusNameValidator;
     private final AccountUsernameRequestValidator accountUsernameRequestValidator;
 
@@ -48,7 +48,7 @@ public class AccountServiceImpl implements AccountService {
     @Transactional
     @Override
     public void addAccountLoginAttemptsById(Long accountId) {
-        final Account account = accountIdRequestValidator.validate(accountId);
+        final Account account = accountRequestValidator.validateId(accountId);
         account.setLoginAttempts(account.getLoginAttempts() + 1);
         account.setLastLoginAt(OffsetDateTime.now(ZoneOffset.UTC));
         accountRepository.save(account);
@@ -68,12 +68,9 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public void verifyAccount(Long accountId, Long accountTokeId) {
         final String verifiedAccountStatusName = AccountStatusEnum.VERIFIED.getName();
-
         final AccountStatus accountStatus = accountStatusNameValidator.validate(verifiedAccountStatusName);
-
         final AccountToken accountToken = accountTokenIdRequestValidator.validate(accountTokeId);
-
-        final Account account = accountIdRequestValidator.validate(accountId);
+        final Account account = accountRequestValidator.validateId(accountId);
 
         account.setStatus(accountStatus);
         account.setLastLoginAt(OffsetDateTime.now(ZoneOffset.UTC));
@@ -86,7 +83,7 @@ public class AccountServiceImpl implements AccountService {
     @Transactional
     @Override
     public void deleteAccountById(Long id) {
-        final Account account = accountIdRequestValidator.validate(id);
+        final Account account = accountRequestValidator.validateId(id);
         accountRepository.delete(account);
     }
 
@@ -100,7 +97,7 @@ public class AccountServiceImpl implements AccountService {
     @Transactional
     @Override
     public void resetAccountLoginAttemptsById(Long accountId) {
-        final Account account = accountIdRequestValidator.validate(accountId);
+        final Account account = accountRequestValidator.validateId(accountId);
 
         account.setLastLoginAt(OffsetDateTime.now(ZoneOffset.UTC));
         account.setLoginAttempts(0);
@@ -154,7 +151,7 @@ public class AccountServiceImpl implements AccountService {
     @Transactional
     @Override
     public void addAccountTokenByAccountId(Long id, AccountTokenRequest accountTokenRequest) {
-        final Account account = accountIdRequestValidator.validate(id);
+        final Account account = accountRequestValidator.validateId(id);
         final AccountToken accountToken = accountTokenRequestValidator.validate(accountTokenRequest);
         accountToken.setAccount(account);
 

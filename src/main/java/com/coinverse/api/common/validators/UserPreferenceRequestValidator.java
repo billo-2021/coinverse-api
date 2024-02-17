@@ -5,11 +5,10 @@ import com.coinverse.api.common.entities.NotificationChannel;
 import com.coinverse.api.common.entities.UserPreference;
 import com.coinverse.api.common.exceptions.InvalidRequestException;
 import com.coinverse.api.common.exceptions.MappingException;
-import com.coinverse.api.common.exceptions.ValidationException;
 import com.coinverse.api.common.models.UserPreferenceRequest;
 import com.coinverse.api.common.repositories.CurrencyRepository;
 import com.coinverse.api.common.repositories.NotificationChannelRepository;
-import jakarta.validation.constraints.NotNull;
+import com.coinverse.api.common.utils.ErrorMessageUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -23,12 +22,11 @@ public class UserPreferenceRequestValidator implements RequestValidator<UserPref
     private final NotificationChannelRepository notificationChannelRepository;
 
     @Override
-    public UserPreference validate(@NotNull final UserPreferenceRequest userPreferenceRequest) throws InvalidRequestException, MappingException {
+    public UserPreference validate(UserPreferenceRequest userPreferenceRequest) throws InvalidRequestException, MappingException {
         final Currency preferredCurrency = currencyRepository
                 .findByCodeIgnoreCase(userPreferenceRequest.getCurrencyCode())
                 .orElseThrow(() ->
-                        new ValidationException("Invalid preferred currency '" +
-                                userPreferenceRequest.getCurrencyCode() + "'", "preference.currencyCode")
+                        ErrorMessageUtils.getValidationException("preference.currencyCode", userPreferenceRequest.getCurrencyCode())
                 );
 
         final Set<NotificationChannel> preferredNotificationChannels = userPreferenceRequest
@@ -37,8 +35,7 @@ public class UserPreferenceRequestValidator implements RequestValidator<UserPref
                 .map((notificationMethod) ->
                         notificationChannelRepository.findByCodeIgnoreCase(notificationMethod)
                                 .orElseThrow(() ->
-                                        new ValidationException("Invalid notification method '" +
-                                                notificationMethod + "'", "preference.notificationMethods")
+                                        ErrorMessageUtils.getValidationException("preference.notificationMethods", notificationMethod)
                                 )
                 ).collect(Collectors.toSet());
 

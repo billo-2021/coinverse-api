@@ -4,10 +4,10 @@ import com.coinverse.api.common.entities.Account;
 import com.coinverse.api.common.entities.Event;
 import com.coinverse.api.common.entities.EventType;
 import com.coinverse.api.common.entities.UserAccountEvent;
-import com.coinverse.api.common.exceptions.MappingException;
 import com.coinverse.api.common.models.UserAccountEventRequest;
 import com.coinverse.api.common.repositories.AccountRepository;
 import com.coinverse.api.common.repositories.EventTypeRepository;
+import com.coinverse.api.common.utils.ErrorMessageUtils;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -20,17 +20,14 @@ public class UserAccountEventValidator {
 
     public Account validateUsername(String username) {
         return accountRepository.findByUsernameIgnoreCase(username)
-                .orElseThrow(() -> new MappingException("Unable to find account for username '"
-                        + username + "'")
-                );
+                .orElseThrow(() -> ErrorMessageUtils.getUnableToFindMappingException("account", "username", username));
     }
     public UserAccountEvent validateUserAccountEventRequest(
             @NotNull final String username,
             @NotNull final UserAccountEventRequest userAccountEventRequest) {
         final Account account = validateUsername(username);
         final EventType eventType = eventTypeRepository.findByCodeIgnoreCase(userAccountEventRequest.getType())
-                .orElseThrow(() -> new MappingException("Unable to find eventType for eventTypeName '"
-                        + userAccountEventRequest.getType() + "'"));
+                .orElseThrow(() -> ErrorMessageUtils.getUnableToFindMappingException("eventType", "eventTypeName", userAccountEventRequest.getType()));
 
         final Event event = Event
                 .builder()

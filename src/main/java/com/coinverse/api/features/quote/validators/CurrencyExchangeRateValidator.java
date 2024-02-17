@@ -2,10 +2,9 @@ package com.coinverse.api.features.quote.validators;
 
 import com.coinverse.api.common.entities.CurrencyPair;
 import com.coinverse.api.common.entities.CurrencyPairType;
-import com.coinverse.api.common.exceptions.InvalidRequestException;
-import com.coinverse.api.common.exceptions.NotFoundException;
 import com.coinverse.api.common.repositories.CurrencyPairRepository;
 import com.coinverse.api.common.repositories.CurrencyPairTypeRepository;
+import com.coinverse.api.common.utils.ErrorMessageUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -16,11 +15,11 @@ public class CurrencyExchangeRateValidator {
 
     public CurrencyPair validateCurrencyPairName(String currencyPairName) {
         return currencyPairRepository.findByNameIgnoreCase(currencyPairName)
-                .orElseThrow(NotFoundException::new);
+                .orElseThrow(ErrorMessageUtils::getNotFoundException);
     }
 
     public CurrencyPairType validateCurrencyPairTypeCode(String currencyTypeCode) {
         return currencyPairTypeRepository.findByCodeIgnoreCase(currencyTypeCode).
-                orElseThrow(InvalidRequestException::new);
+                orElseThrow(ErrorMessageUtils::getInvalidRequestException);
     }
 }

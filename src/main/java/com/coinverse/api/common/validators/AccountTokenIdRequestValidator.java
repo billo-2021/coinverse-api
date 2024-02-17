@@ -4,7 +4,7 @@ import com.coinverse.api.common.entities.AccountToken;
 import com.coinverse.api.common.exceptions.InvalidRequestException;
 import com.coinverse.api.common.exceptions.MappingException;
 import com.coinverse.api.common.repositories.AccountTokenRepository;
-import jakarta.validation.constraints.NotNull;
+import com.coinverse.api.common.utils.ErrorMessageUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -17,7 +17,7 @@ public class AccountTokenIdRequestValidator implements RequestValidator<Long, Ac
     public AccountToken validate(Long id) throws InvalidRequestException, MappingException {
         return accountTokenRepository.findById(id)
                 .orElseThrow(() ->
-                        new InvalidRequestException("Invalid account verification id '" + id + "'")
+                        ErrorMessageUtils.getInvalidRequestException("verificationId", String.valueOf(id))
                 );
     }
 }

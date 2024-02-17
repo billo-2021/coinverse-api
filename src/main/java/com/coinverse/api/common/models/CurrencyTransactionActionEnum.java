@@ -12,7 +12,7 @@ public enum CurrencyTransactionActionEnum implements DefaultStringEnumComparator
     private final String code;
     private final String name;
 
-    private CurrencyTransactionActionEnum(String code, String name) {
+    CurrencyTransactionActionEnum(String code, String name) {
         this.code = code;
         this.name = name;
     }

@@ -5,12 +5,11 @@ import com.coinverse.api.common.entities.NotificationChannel;
 import com.coinverse.api.common.entities.UserPreference;
 import com.coinverse.api.common.exceptions.InvalidRequestException;
 import com.coinverse.api.common.exceptions.MappingException;
-import com.coinverse.api.common.exceptions.ValidationException;
 import com.coinverse.api.common.models.UserPreferenceUpdateRequest;
 import com.coinverse.api.common.repositories.CurrencyRepository;
 import com.coinverse.api.common.repositories.NotificationChannelRepository;
+import com.coinverse.api.common.utils.ErrorMessageUtils;
 import jakarta.annotation.Nullable;
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -25,7 +24,7 @@ public class UserPreferenceUpdateRequestValidator implements RequestValidator<Us
 
     @Nullable
     @Override
-    public UserPreference validate(@NotNull UserPreferenceUpdateRequest userPreferenceUpdateRequest) throws InvalidRequestException, MappingException {
+    public UserPreference validate(UserPreferenceUpdateRequest userPreferenceUpdateRequest) throws InvalidRequestException, MappingException {
         if (userPreferenceUpdateRequest.getCurrencyCode() == null &&
                 userPreferenceUpdateRequest.getNotificationMethods() == null) {
             return null;
@@ -38,8 +37,9 @@ public class UserPreferenceUpdateRequestValidator implements RequestValidator<Us
 
         if (preferredCurrencyCode != null) {
             Currency currency = currencyRepository.findByCodeIgnoreCase(preferredCurrencyCode)
-                    .orElseThrow(() -> new ValidationException("Invalid currency '" +
-                            preferredCurrencyCode, "preference.currencyCode"));
+                    .orElseThrow(() -> ErrorMessageUtils.getValidationException("preference.currencyCode",
+                            preferredCurrencyCode));
+
             userPreference.setCurrency(currency);
         }
 
@@ -47,7 +47,7 @@ public class UserPreferenceUpdateRequestValidator implements RequestValidator<Us
             Set<NotificationChannel> notificationChannels = preferredNotificationMethods
                     .stream()
                     .map(preferredNotificationMethod -> notificationChannelRepository.findByCodeIgnoreCase(preferredNotificationMethod)
-                            .orElseThrow(() -> new ValidationException("Invalid notification method '" + preferredNotificationMethod, "preference.notificationMethods"))
+                            .orElseThrow(() -> ErrorMessageUtils.getValidationException("preference.notificationMethods", preferredNotificationMethod))
                     ).collect(Collectors.toSet());
 
             userPreference.setNotificationChannels(notificationChannels);

@@ -3,9 +3,7 @@ package com.coinverse.api.features.quote.services;
 import com.coinverse.api.common.models.CurrencyPairTypeEnum;
 import com.coinverse.api.common.models.PageResponse;
 import com.coinverse.api.features.quote.models.CurrencyPairExchangeRatePageResponse;
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 

@@ -1,7 +1,6 @@
 package com.coinverse.api.common.exceptions;
 
 import com.coinverse.api.common.errors.ApiErrorCode;
-import jakarta.validation.constraints.NotNull;
 import org.springframework.http.HttpStatus;
 
 public class NotFoundException extends ApiException {
@@ -11,7 +10,7 @@ public class NotFoundException extends ApiException {
         this(API_ERROR_CODE.getReason());
     }
 
-    public NotFoundException(@NotNull final String message) {
+    public NotFoundException(String message) {
         super(message, API_ERROR_CODE, HTTP_STATUS);
     }
 }

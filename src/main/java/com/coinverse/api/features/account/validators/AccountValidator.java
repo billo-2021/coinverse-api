@@ -1,8 +1,9 @@
 package com.coinverse.api.features.account.validators;
 
+import com.coinverse.api.common.constants.ErrorMessage;
 import com.coinverse.api.common.entities.Account;
-import com.coinverse.api.common.exceptions.InvalidRequestException;
 import com.coinverse.api.common.repositories.AccountRepository;
+import com.coinverse.api.common.utils.ErrorMessageUtils;
 import com.coinverse.api.features.account.models.UpdatePasswordRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -16,10 +17,10 @@ public class AccountValidator {
     private final PasswordEncoder passwordEncoder;
     public Account validateChangePasswordRequest(String username, UpdatePasswordRequest updatePasswordRequest) {
         Account account = accountRepository.findByUsernameIgnoreCase(username)
-                .orElseThrow(InvalidRequestException::new);
+                .orElseThrow(ErrorMessageUtils::getInvalidRequestException);
 
         if (!passwordEncoder.matches(updatePasswordRequest.getCurrentPassword(), account.getPassword())) {
-            throw new InvalidRequestException("Invalid current password provided");
+            throw ErrorMessageUtils.getInvalidRequestException("currentPassword");
         }
 
         return account;

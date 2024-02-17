@@ -4,6 +4,7 @@ import com.coinverse.api.common.entities.Account;
 import com.coinverse.api.common.exceptions.InvalidRequestException;
 import com.coinverse.api.common.exceptions.MappingException;
 import com.coinverse.api.common.repositories.AccountRepository;
+import com.coinverse.api.common.utils.ErrorMessageUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -16,7 +17,7 @@ public class AccountUsernameRequestValidator implements RequestValidator<String,
     public Account validate(String username) throws InvalidRequestException, MappingException {
         return accountRepository.findByUsernameIgnoreCase(username)
                 .orElseThrow(() ->
-                        new InvalidRequestException("Invalid username '" + username + "'")
+                        ErrorMessageUtils.getInvalidRequestException("username", username)
                 );
     }
 }

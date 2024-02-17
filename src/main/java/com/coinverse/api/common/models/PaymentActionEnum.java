@@ -1,11 +1,12 @@
 package com.coinverse.api.common.models;
 
+import com.coinverse.api.common.validators.DefaultStringEnumComparator;
 import jakarta.validation.constraints.NotNull;
 
 import java.util.Optional;
 import java.util.stream.Stream;
 
-public enum PaymentActionEnum {
+public enum PaymentActionEnum  implements DefaultStringEnumComparator {
     DEPOSIT("deposit", "Deposit"),
     WITHDRAW("withdraw", "Withdraw");
 
@@ -28,5 +29,10 @@ public enum PaymentActionEnum {
                 .filter(paymentActionEnum ->
                         paymentActionEnum.getCode().equalsIgnoreCase(code))
                 .findFirst();
+    }
+
+    @Override
+    public String toString() {
+        return name;
     }
 }

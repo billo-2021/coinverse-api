@@ -11,7 +11,6 @@ import com.coinverse.api.common.repositories.UserRepository;
 import com.coinverse.api.features.authentication.models.*;
 import com.coinverse.api.features.authentication.validators.ResetPasswordValidator;
 import com.coinverse.api.features.messaging.models.Message;
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,7 +28,7 @@ public class ResetPasswordService {
     private final ResetPasswordTokenGenerator resetPasswordTokenGenerator;
     private final ResetPasswordValidator resetPasswordValidator;
 
-    public ResetPasswordTokenResponse requestResetPasswordToken(@NotNull final TokenRequest tokenRequest) {
+    public ResetPasswordTokenResponse requestResetPasswordToken(TokenRequest tokenRequest) {
         final Account account = resetPasswordValidator.validateRequestResetPasswordToken(tokenRequest);
         final User user = getAccountUser(account);
 
@@ -54,7 +53,7 @@ public class ResetPasswordService {
                 .build();
     }
 
-    public PasswordTokenUserResponse getPasswordTokenUser(final String token) {
+    public PasswordTokenUserResponse getPasswordTokenUser(String token) {
         final AccountToken accountToken = resetPasswordValidator.validateTokenKey(token);
 
         final Account account = accountToken.getAccount();
@@ -68,7 +67,7 @@ public class ResetPasswordService {
     }
 
     @Transactional
-    public void resetPassword(@NotNull final ResetPasswordRequest resetPasswordRequest) {
+    public void resetPassword(ResetPasswordRequest resetPasswordRequest) {
         final Account account = resetPasswordValidator.validateResetPassword(resetPasswordRequest);
 
         final TokenVerifyRequest tokenVerifyRequest = TokenVerifyRequest
@@ -86,7 +85,7 @@ public class ResetPasswordService {
         accountTokenRepository.deleteById(accountTokenResponse.getId());
     }
 
-    private User getAccountUser(final Account account) {
+    private User getAccountUser(Account account) {
         return userRepository.findByAccountId(account.getId())
                 .orElseThrow(()
                         -> new MappingException("Invalid username '" + account.getUsername() + "'"));
