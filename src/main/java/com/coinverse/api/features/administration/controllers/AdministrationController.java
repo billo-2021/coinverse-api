@@ -7,10 +7,7 @@ import com.coinverse.api.common.models.ApiMessageResponse;
 import com.coinverse.api.common.models.PageResponse;
 import com.coinverse.api.common.models.UserRequest;
 import com.coinverse.api.common.validators.PageRequestValidator;
-import com.coinverse.api.features.administration.models.CryptoCurrencyRequest;
-import com.coinverse.api.features.administration.models.CryptoCurrencyResponse;
-import com.coinverse.api.features.administration.models.CryptoCurrencyUpdateRequest;
-import com.coinverse.api.features.administration.models.UserResponse;
+import com.coinverse.api.features.administration.models.*;
 import com.coinverse.api.features.administration.services.AdministrationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -41,16 +38,10 @@ public class AdministrationController {
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiMessageResponse.of(ApiMessage.USER_ADDED));
     }
 
-    @PatchMapping(AdministrationRoutes.DISABLE_USER_ACCOUNT)
-    public ApiMessageResponse disableUserAccount(@PathVariable String username) {
-        administrationService.disableUserAccount(username);
-        return ApiMessageResponse.of(ApiMessage.ACCOUNT_DISABLED_SUCCESS);
-    }
-
-    @PatchMapping(AdministrationRoutes.ENABLE_USER_ACCOUNT)
-    public ApiMessageResponse enableUserAccount(@PathVariable String username) {
-        administrationService.enableUserAccount(username);
-        return ApiMessageResponse.of(ApiMessage.ACCOUNT_ENABLED_SUCCESS);
+    @PatchMapping("/users/account/enabled")
+    public ApiMessageResponse updateUserAccountEnabled(@Valid @RequestBody UpdateAccountEnabledRequest updateAccountEnabledRequest) {
+        administrationService.updateUserAccountEnabled(updateAccountEnabledRequest);
+        return ApiMessageResponse.of(updateAccountEnabledRequest.getIsEnabled() ? ApiMessage.ACCOUNT_ENABLED_SUCCESS : ApiMessage.ACCOUNT_DISABLED_SUCCESS);
     }
 
     @PostMapping(AdministrationRoutes.CRYPTO)

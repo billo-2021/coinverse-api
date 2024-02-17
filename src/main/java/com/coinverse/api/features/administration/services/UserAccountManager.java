@@ -2,7 +2,8 @@ package com.coinverse.api.features.administration.services;
 
 import com.coinverse.api.common.entities.Account;
 import com.coinverse.api.common.repositories.AccountRepository;
-import com.coinverse.api.features.administration.validators.UserAccountValidator;
+import com.coinverse.api.common.validators.AccountRequestValidator;
+import com.coinverse.api.features.administration.models.UpdateAccountEnabledRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,19 +12,13 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class UserAccountManager {
     private final AccountRepository accountRepository;
-    private final UserAccountValidator userAccountValidator;
+
+    private final AccountRequestValidator accountRequestValidator;
 
     @Transactional
-    public void disableAccount(String username) {
-        final Account account = userAccountValidator.validateUsername(username);
-        account.setIsEnabled(false);
-        accountRepository.save(account);
-    }
-
-    @Transactional
-    public void enableUserAccount(String username) {
-        final Account account = userAccountValidator.validateUsername(username);
-        account.setIsEnabled(true);
+    public void updateAccountEnabled(UpdateAccountEnabledRequest updateAccountEnabledRequest) {
+        final Account account = accountRequestValidator.validateUsername(updateAccountEnabledRequest.getUsername());
+        account.setIsEnabled(updateAccountEnabledRequest.getIsEnabled());
         accountRepository.save(account);
     }
 }

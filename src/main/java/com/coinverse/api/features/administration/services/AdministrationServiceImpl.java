@@ -2,10 +2,7 @@ package com.coinverse.api.features.administration.services;
 
 import com.coinverse.api.common.models.PageResponse;
 import com.coinverse.api.common.models.UserRequest;
-import com.coinverse.api.features.administration.models.CryptoCurrencyRequest;
-import com.coinverse.api.features.administration.models.CryptoCurrencyResponse;
-import com.coinverse.api.features.administration.models.CryptoCurrencyUpdateRequest;
-import com.coinverse.api.features.administration.models.UserResponse;
+import com.coinverse.api.features.administration.models.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -23,13 +20,8 @@ public class AdministrationServiceImpl implements AdministrationService {
     }
 
     @Override
-    public void disableUserAccount(String username) {
-        userAccountManager.disableAccount(username);
-    }
-
-    @Override
-    public void enableUserAccount(String username) {
-        userAccountManager.enableUserAccount(username);
+    public void updateUserAccountEnabled(UpdateAccountEnabledRequest updateAccountEnabledRequest) {
+        userAccountManager.updateAccountEnabled(updateAccountEnabledRequest);
     }
 
     @Override

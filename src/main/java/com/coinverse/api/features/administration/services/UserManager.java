@@ -4,6 +4,7 @@ import com.coinverse.api.common.entities.*;
 import com.coinverse.api.common.models.PageResponse;
 import com.coinverse.api.common.models.UserRequest;
 import com.coinverse.api.common.repositories.UserRepository;
+import com.coinverse.api.common.security.services.UserAccountService;
 import com.coinverse.api.common.services.UserService;
 import com.coinverse.api.features.administration.models.*;
 import lombok.RequiredArgsConstructor;
@@ -20,11 +21,15 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UserManager {
     private final UserRepository userRepository;
+
+    private final UserAccountService userAccountService;
     private final UserService userService;
+
     private final PasswordEncoder passwordEncoder;
 
     public PageResponse<UserResponse> getUsers(Pageable pageable) {
-        final Page<User> usersPage = userRepository.findAll(pageable);
+        final Account userAccount = userAccountService.getCurrentUserAccount();
+        final Page<User> usersPage = userRepository.findByAccountIdNot(userAccount.getId(), pageable);
 
         final Page<UserResponse> userResponsePage = usersPage.map((user) -> {
             final Account account = user.getAccount();

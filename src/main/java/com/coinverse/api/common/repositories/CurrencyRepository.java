@@ -12,7 +12,7 @@ import java.util.Optional;
 
 @Repository
 public interface CurrencyRepository extends JpaRepository<Currency, Long> {
-    Optional<Currency> findByCodeIgnoreCase(final @NotNull String code);
+    Optional<Currency> findByCodeIgnoreCase(String code);
     List<Currency> findByTypeNameIgnoreCase(String name);
-    Page<Currency> findByTypeNameIgnoreCase(final String typeName, Pageable page);
+    Page<Currency> findByTypeNameIgnoreCase(String typeName, Pageable page);
 }
